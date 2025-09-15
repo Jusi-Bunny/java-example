@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    enabled: true # 启用 OpenAPI 3 规范的 API 文档生成功能（默认为 true）
+    path: /v3/api-docs # # 修改 API 文档 JSON 数据的访问路径
+  swagger-ui:
+    enabled: true # 启用 Swagger UI 界面（默认为 true）
+    path: /swagger-ui.html # 访问 Swagger UI 界面的访问路径
+knife4j:
+  enable: false # 关闭 Knife4j 的增强配置
+  setting:
+    language: zh_cn # 设置 Knife4j 界面语言为简体中文
