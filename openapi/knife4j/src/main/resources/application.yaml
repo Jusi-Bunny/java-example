@@ -12,3 +12,15 @@ knife4j:
   enable: false # 关闭 Knife4j 的增强配置
   setting:
     language: zh_cn # 设置 Knife4j 界面语言为简体中文
+
+example:
+  version: 1.0.0
+  swagger:
+    title: Knife4j 项目接口文档 # 项目标题
+    description: 项目接口文档描述 # 项目描述
+    version: ${example.version} # 项目版本
+    url: https://www.example.com # 项目地址
+    author: xxx # 作者
+    email: email@example.com # 邮箱
+    license: Apache 2.0 # 许可
+    license-url: https://www.apache.org/licenses/LICENSE-2.0 # 许可地址
