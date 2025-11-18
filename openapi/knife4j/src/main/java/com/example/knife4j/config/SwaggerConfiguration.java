@@ -17,6 +17,9 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(SwaggerProperties.class)
 public class SwaggerConfiguration {
 
+    /**
+     *
+     */
     // @Bean
     // public OpenAPI openAPI() {
     //     final String securityName = "Token";

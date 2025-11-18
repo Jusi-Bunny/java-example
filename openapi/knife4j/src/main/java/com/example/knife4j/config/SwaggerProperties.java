@@ -41,18 +41,18 @@ public class SwaggerProperties {
     /**
      * email
      */
-    @NotEmpty(message = "扫描的 email 不能为空")
+    @NotEmpty(message = "email 不能为空")
     private String email;
 
     /**
      * license
      */
-    @NotEmpty(message = "扫描的 license 不能为空")
+    @NotEmpty(message = "license 不能为空")
     private String license;
 
     /**
      * license-url
      */
-    @NotEmpty(message = "扫描的 license-url 不能为空")
+    @NotEmpty(message = "license-url 不能为空")
     private String licenseUrl;
 }
