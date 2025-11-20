@@ -2,12 +2,15 @@ package com.example.knife4j.config;
 
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -45,11 +48,29 @@ public class SwaggerConfiguration {
     //                                     .bearerFormat("JWT")))
     //             .addSecurityItem(new SecurityRequirement().addList(securityName)); // 许可证链接
     // }
-
     @Bean
     public OpenAPI openAPI(SwaggerProperties properties) {
+        final String securityName = "Token";
+        // OpenAPI info = new OpenAPI()
+        //         .info(buildInfo(properties));
+        // info.getComponents().addSecuritySchemes(securityName,
+        //         new SecurityScheme()
+        //                 .name(securityName)
+        //                 .type(SecurityScheme.Type.HTTP)
+        //                 .scheme("bearer")
+        //                 .bearerFormat("JWT"));
+        // info.addSecurityItem(new SecurityRequirement().addList(securityName));
+        // return info;
         return new OpenAPI()
-                .info(buildInfo(properties));
+                .info(buildInfo(properties))
+                .components(new Components()
+                        .addSecuritySchemes(securityName, new SecurityScheme()
+                                .name(securityName)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement()
+                        .addList(securityName));
     }
 
     private Info buildInfo(SwaggerProperties properties) {
@@ -68,12 +89,50 @@ public class SwaggerConfiguration {
 
     @Bean
     public GroupedOpenApi exampleApi() {
+        final String securityName = "Token";
         return GroupedOpenApi.builder()
-                .group("示例接口") // 分组名称
+                .group("示例分组") // 分组名称
                 // .packagesToScan("com.example.controller") // 包路径
                 .pathsToMatch("/example/**")
+                .addOpenApiCustomizer(openApi -> openApi
+                        .components(new Components()
+                                .addSecuritySchemes(securityName, new SecurityScheme()
+                                        .name(securityName)
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")))
+                        .addSecurityItem(new SecurityRequirement()
+                                .addList(securityName)))
                 .build();
     }
+
+    // @Bean
+    // public GroupedOpenApi exampleApi() {
+    //     final String securityName = "Token";
+    //     return GroupedOpenApi.builder()
+    //             .group("示例分组") // 分组名称
+    //             // .packagesToScan("com.example.controller") // 包路径
+    //             .pathsToMatch("/example/**")
+    //             .addOpenApiCustomizer(openApi -> openApi
+    //                     .components(new Components()
+    //                             .addSecuritySchemes(securityName, new SecurityScheme()
+    //                                     .name(securityName)
+    //                                     .type(SecurityScheme.Type.HTTP)
+    //                                     .scheme("bearer")
+    //                                     .bearerFormat("JWT")))
+    //                     .addSecurityItem(new SecurityRequirement()
+    //                             .addList(securityName)))
+    //             .addOperationCustomizer((operation, handlerMethod) -> {
+    //                 operation.addParametersItem(new Parameter()
+    //                         .name("token")
+    //                         .description("用户认证 Token")
+    //                         .in(ParameterIn.HEADER.toString())
+    //                         .schema(new StringSchema()._default("default-token"))
+    //                         .required(true)); // 表示必输
+    //                 return operation;
+    //             })
+    //             .build();
+    // }
 
     public static GroupedOpenApi buildGroupedOpenApi(String group, String path) {
         return GroupedOpenApi.builder()

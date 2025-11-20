@@ -8,6 +8,7 @@ springdoc:
   swagger-ui:
     enabled: true # 启用 Swagger UI 界面（默认为 true）
     path: /swagger-ui.html # 访问 Swagger UI 界面的访问路径
+
 knife4j:
   enable: false # 关闭 Knife4j 的增强配置
   setting:
