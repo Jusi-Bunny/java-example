@@ -11,18 +11,17 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 
 @Configuration
 @EnableConfigurationProperties(SwaggerProperties.class)
 public class SwaggerConfiguration {
 
-    /**
-     *
-     */
     // @Bean
     // public OpenAPI openAPI() {
     //     final String securityName = "Token";
@@ -48,24 +47,21 @@ public class SwaggerConfiguration {
     //                                     .bearerFormat("JWT")))
     //             .addSecurityItem(new SecurityRequirement().addList(securityName)); // 许可证链接
     // }
+
+    /**
+     * 配置 OpenAPI
+     *
+     * @param properties Swagger 配置属性
+     * @return OpenAPI 对象
+     */
     @Bean
     public OpenAPI openAPI(SwaggerProperties properties) {
-        final String securityName = "Token";
-        // OpenAPI info = new OpenAPI()
-        //         .info(buildInfo(properties));
-        // info.getComponents().addSecuritySchemes(securityName,
-        //         new SecurityScheme()
-        //                 .name(securityName)
-        //                 .type(SecurityScheme.Type.HTTP)
-        //                 .scheme("bearer")
-        //                 .bearerFormat("JWT"));
-        // info.addSecurityItem(new SecurityRequirement().addList(securityName));
-        // return info;
+        final String securityName = "Authorization";
         return new OpenAPI()
                 .info(buildInfo(properties))
                 .components(new Components()
                         .addSecuritySchemes(securityName, new SecurityScheme()
-                                .name(securityName)
+                                .description("用户认证")
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
@@ -94,15 +90,24 @@ public class SwaggerConfiguration {
                 .group("示例分组") // 分组名称
                 // .packagesToScan("com.example.controller") // 包路径
                 .pathsToMatch("/example/**")
-                .addOpenApiCustomizer(openApi -> openApi
-                        .components(new Components()
-                                .addSecuritySchemes(securityName, new SecurityScheme()
-                                        .name(securityName)
-                                        .type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("JWT")))
-                        .addSecurityItem(new SecurityRequirement()
-                                .addList(securityName)))
+                // .addOperationCustomizer((operation, handlerMethod) -> {
+                //     operation.addParametersItem(new Parameter()
+                //             .name("Authorization")
+                //             .description("用户认证 Token")
+                //             .in(SecurityScheme.In.HEADER.toString())
+                //             .schema(new StringSchema()._default("default-token"))
+                //             .required(true));
+                //     return operation;
+                // })
+                // .addOpenApiCustomizer(openApi -> {
+                //     openApi.getComponents().addSecuritySchemes(securityName, new SecurityScheme()
+                //             .name(securityName)
+                //             .description("用户认证")
+                //             .type(SecurityScheme.Type.HTTP)
+                //             .scheme("bearer")
+                //             .bearerFormat("JWT"));
+                //     openApi.getSecurity().add(new SecurityRequirement().addList(securityName));
+                // })
                 .build();
     }
 
@@ -150,5 +155,21 @@ public class SwaggerConfiguration {
                 .in(ParameterIn.HEADER.toString())
                 .schema(new StringSchema()._default("default-token"))
                 .required(false);
+    }
+
+    @Bean
+    public GlobalOpenApiCustomizer orderGlobalOpenApiCustomizer() {
+        return openApi -> {
+            // 全局添加鉴权参数
+            if (openApi.getPaths() != null) {
+                openApi.getPaths().forEach((s, pathItem) -> {
+                    // 为所有接口添加鉴权
+                    pathItem.readOperations().forEach(operation -> {
+                        operation.addSecurityItem(new SecurityRequirement().addList(HttpHeaders.AUTHORIZATION));
+                    });
+                });
+            }
+
+        };
     }
 }
