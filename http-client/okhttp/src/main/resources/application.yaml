@@ -1,8 +1,8 @@
 ok:
   http:
-    connect-timeout: 60
-    read-timeout: 60
-    write-timeout: 60
+    connect-timeout: 60 # 连接超时
+    read-timeout: 60 # 读取超时
+    write-timeout: 60 # 写入超时
     # 连接池中整体的空闲连接的最大数量
     max-idle-connections: 200
     # 连接空闲时间最多为 300 秒

@@ -14,12 +14,16 @@ public class OkHttpConfiguration {
 
     @Value("${ok.http.connect-timeout}")
     private Integer connectTimeout;
+
     @Value("${ok.http.read-timeout}")
     private Integer readTimeout;
+
     @Value("${ok.http.write-timeout}")
     private Integer writeTimeout;
+
     @Value("${ok.http.max-idle-connections}")
     private Integer maxIdleConnections;
+
     @Value("${ok.http.keep-alive-duration}")
     private Long keepAliveDuration;
 
