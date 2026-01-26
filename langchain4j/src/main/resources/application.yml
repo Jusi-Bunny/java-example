@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: LangChain4j-Example
+  profiles:
+    active: local
+
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        model-name: qwen-max
+        api-key: sk-77dddd8da0004609a7c1a82a900b3c70
