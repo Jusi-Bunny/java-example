@@ -14,6 +14,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.boot.version>3.5.10</spring.boot.version>
         <lombok.version>1.18.42</lombok.version>
+        <langchain4j-dashscope.version>1.1.0-beta7</langchain4j-dashscope.version>
+        <langchain4j.version>1.1.0</langchain4j.version>
+        <langchain4j-spring.version>1.1.0-beta7</langchain4j-spring.version>
     </properties>
 
     <parent>
@@ -24,17 +27,20 @@
 
     <dependencies>
 
+        <!-- Spring Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Spring Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -42,11 +48,28 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- LangChain4j DashScope -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
                 <artifactId>langchain4j-community-dashscope-spring-boot-starter</artifactId>
-            <version>1.1.0-beta7</version>
+            <version>${langchain4j-dashscope.version}</version>
             <scope>compile</scope>
         </dependency>
+
+        <!-- LangChain4j -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>${langchain4j.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- LangChain4j Spring -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-spring-boot-starter</artifactId>
+            <version>${langchain4j-spring.version}</version>
+        </dependency>
+
     </dependencies>
 </project>
