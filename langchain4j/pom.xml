@@ -17,6 +17,7 @@
         <langchain4j-dashscope.version>1.1.0-beta7</langchain4j-dashscope.version>
         <langchain4j.version>1.1.0</langchain4j.version>
         <langchain4j-spring.version>1.1.0-beta7</langchain4j-spring.version>
+        <langchain4j-easy-rag.version>1.1.0-beta7</langchain4j-easy-rag.version>
     </properties>
 
     <parent>
@@ -51,7 +52,7 @@
         <!-- LangChain4j DashScope -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
-                <artifactId>langchain4j-community-dashscope-spring-boot-starter</artifactId>
+            <artifactId>langchain4j-community-dashscope-spring-boot-starter</artifactId>
             <version>${langchain4j-dashscope.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -70,6 +71,13 @@
             <artifactId>langchain4j-spring-boot-starter</artifactId>
             <version>${langchain4j-spring.version}</version>
         </dependency>
+
+        <!-- LangChain4j Easy RAG -->
+        <!--<dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-easy-rag</artifactId>
+            <version>${langchain4j-easy-rag.version}</version>
+        </dependency>-->
 
     </dependencies>
 </project>

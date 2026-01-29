@@ -1,4 +1,4 @@
-package com.example.langchain4j.utils;
+package com.example.langchain4j.llm;
 
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
@@ -19,7 +19,7 @@ public class AiChatHelperTests {
     }
 
     @Test
-    void chatWithMessage() {
+    void chatWithUserMessage() {
         UserMessage userMessage = UserMessage.from(
                 TextContent.from("描述图片内容"),
                 ImageContent.from("https://www.codefather.cn/logo.png")
