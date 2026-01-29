@@ -10,3 +10,6 @@ langchain4j:
       chat-model:
         model-name: qwen-max
         api-key: sk-77dddd8da0004609a7c1a82a900b3c70
+      embedding-model:
+        model-name: text-embedding-v4
+        api-key: sk-597838628f6c4ad9af3adb0cdd7a6406

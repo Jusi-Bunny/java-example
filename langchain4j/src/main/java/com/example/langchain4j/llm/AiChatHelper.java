@@ -1,4 +1,4 @@
-package com.example.langchain4j.utils;
+package com.example.langchain4j.llm;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.SystemMessage;
@@ -41,7 +41,7 @@ public class AiChatHelper {
     }
 
     /**
-     * 聊天
+     * 聊天，UserMessage 消息
      *
      * @param userMessage 用户消息
      * @return AI 输出
@@ -53,6 +53,12 @@ public class AiChatHelper {
         return aiMessage.text();
     }
 
+    /**
+     * 聊天，附带 SystemMessage
+     *
+     * @param message 用户消息
+     * @return AI 输出
+     */
     public String chatWithSystemMessage(String message) {
         log.info("message: {}", message);
         // 只能包含一个 SystemMessage，发送多个 SystemMessage，新的会替换旧的
