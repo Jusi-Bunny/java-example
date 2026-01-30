@@ -18,6 +18,8 @@
         <langchain4j.version>1.1.0</langchain4j.version>
         <langchain4j-spring.version>1.1.0-beta7</langchain4j-spring.version>
         <langchain4j-easy-rag.version>1.1.0-beta7</langchain4j-easy-rag.version>
+        <langchain4j-mcp.version>1.1.0-beta7</langchain4j-mcp.version>
+        <langchain4j-reactor.version>1.1.0-beta7</langchain4j-reactor.version>
     </properties>
 
     <parent>
@@ -46,7 +48,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- LangChain4j DashScope -->
@@ -54,7 +55,6 @@
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-community-dashscope-spring-boot-starter</artifactId>
             <version>${langchain4j-dashscope.version}</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- LangChain4j -->
@@ -62,10 +62,9 @@
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j</artifactId>
             <version>${langchain4j.version}</version>
-            <scope>compile</scope>
         </dependency>
 
-        <!-- LangChain4j Spring -->
+        <!-- LangChain4j Spring Boot -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-spring-boot-starter</artifactId>
@@ -78,6 +77,20 @@
             <artifactId>langchain4j-easy-rag</artifactId>
             <version>${langchain4j-easy-rag.version}</version>
         </dependency>-->
+
+        <!-- LangChain4j MCP -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-mcp</artifactId>
+            <version>${langchain4j-mcp.version}</version>
+        </dependency>
+
+        <!-- LangChain4j Reactor -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-reactor</artifactId>
+            <version>${langchain4j-reactor.version}</version>
+        </dependency>
 
     </dependencies>
 </project>
