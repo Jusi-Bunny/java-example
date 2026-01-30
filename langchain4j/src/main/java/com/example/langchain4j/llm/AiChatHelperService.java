@@ -3,6 +3,8 @@ package com.example.langchain4j.llm;
 import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.Result;
 import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -49,4 +51,14 @@ public interface AiChatHelperService {
      */
     @SystemMessage(fromResource = "system-prompt.txt")
     Result<String> chatWithRag(String userMessage);
+
+    /**
+     * 流式输出
+     *
+     * @param memoryId    会话记忆 ID
+     * @param userMessage 用户消息
+     * @return AI 输出
+     */
+    @SystemMessage(fromResource = "system-prompt.txt")
+    Flux<String> chatStream(@MemoryId int memoryId, @UserMessage String userMessage);
 }
