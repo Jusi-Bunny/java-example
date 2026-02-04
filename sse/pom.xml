@@ -12,14 +12,14 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.boot.version>3.5.5</spring.boot.version>
+        <spring.boot.version>3.5.10</spring.boot.version>
         <lombok.version>1.18.40</lombok.version>
     </properties>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.5</version>
+        <version>3.5.10</version>
     </parent>
 
     <dependencies>
@@ -36,6 +36,5 @@
             <version>${lombok.version}</version>
         </dependency>
     </dependencies>
-
 
 </project>
