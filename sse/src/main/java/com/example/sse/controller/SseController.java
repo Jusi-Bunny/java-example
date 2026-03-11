@@ -1,13 +1,18 @@
 package com.example.sse.controller;
 
+import com.example.sse.manager.SseManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +20,18 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RestController
 @RequestMapping("/sse")
+@RequiredArgsConstructor
 public class SseController {
+
+    private final SseManager sseManager;
+
+    @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter connect(@RequestHeader("userId") String userId) {
+        //
+        return sseManager.connect(userId);
+    }
+
+    // =================================================================================================================
 
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -143,35 +159,6 @@ public class SseController {
                     }
                 }
                 emitter.complete();
-            } catch (Exception e) {
-                emitter.completeWithError(e);
-            }
-        }).start();
-
-        return emitter;
-    }
-
-    @GetMapping("/sse/error-test")
-    public SseEmitter testError() {
-
-        SseEmitter emitter = new SseEmitter(0L);
-
-        emitter.onCompletion(() -> log.info("onCompletion triggered"));
-
-        emitter.onTimeout(() -> log.info("onTimeout triggered"));
-
-        emitter.onError((e) -> log.info("onError triggered: {}", e.getMessage()));
-
-        new Thread(() -> {
-            try {
-
-                emitter.send("start message");
-
-                Thread.sleep(1000);
-
-                // 模拟异常
-
-
             } catch (Exception e) {
                 emitter.completeWithError(e);
             }
