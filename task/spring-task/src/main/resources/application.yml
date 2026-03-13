@@ -1,0 +1,8 @@
+server:
+  port: 8900
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: spring-task
