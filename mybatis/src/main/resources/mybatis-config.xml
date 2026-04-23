@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!-- 引入外部属性文件 -->
+    <properties resource="db.properties"/>
+
+    <settings>
+        <!-- 开启驼峰命名转换 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- 自动映射 -->
+        <setting name="autoMappingBehavior" value="PARTIAL"/>
+        <!-- 日志实现 -->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!-- 懒加载 -->
+        <!--<setting name="lazyLoadingEnabled" value="true"/>-->
+        <!-- 懒加载时，是否允许结果中的对象进行属性填充 -->
+        <!--<setting name="aggressiveLazyLoading" value="false"/>-->
+        <!-- 懒加载触发方法 -->
+        <!--<setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>-->
+        <!-- 开启二级缓存（默认开启） -->
+        <!--<setting name="cacheEnabled" value="true"/>-->
+    </settings>
+
+    <!-- 配置别名，可选 -->
+    <typeAliases>
+        <package name="com.example.mybatis.entity"/>
+    </typeAliases>
+
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!-- Dialect 方言：告诉插件正在给哪一种数据库服务 -->
+            <property name="helperDialect" value="mysql"/>
+            <!-- 开启分页合理化 -->
+            <property name="reasonable" value="true"/>
+        </plugin>
+    </plugins>
+
+    <!-- 数据库链接信息（开发环境），支持多数据源 -->
+    <environments default="development">
+        <!-- 开发环境 -->
+        <environment id="development">
+            <!--
+                MyBatis 自带的事务管理器：JDBC
+                将来会替换为 Spring 中的 DataSourceTransactionManager
+            -->
+            <transactionManager type="JDBC"/>
+            <!--
+                MyBatis 自带的数据源：POOLED
+                将来会替换为 Spring 中的 Druid
+            -->
+            <dataSource type="POOLED">
+                <!-- 建立数据库连接的具体信息，支持从外部文件读取 -->
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--
+        注册映射器：指定 Mybatis 映射文件的具体位置，将 Mapper.java 和 Mapper.XML 关联起来
+        如果没有注册映射，会出现 BindingException 异常，因为没有注册映射，MyBatis 配置文件和映射文件没有任何联系
+        mapper 标签：配置一个具体的 Mapper 映射文件
+        resource 属性：指定 Mapper 映射文件的实际存储位置，这里需要使用一个以类路径根目录为基准的相对路径
+    -->
+    <mappers>
+        <!-- 注册 SQL 映射文件，就是编写 SQL 的地方 -->
+        <mapper resource="mapper/SysUserMapper.xml"/>
+        <mapper resource="mapper/BizOrderMapper.xml"/>
+        <mapper resource="mapper/BizCustomerMapper.xml"/>
+        <mapper resource="mapper/TeacherMapper.xml"/>
+        <!-- 使用 package 时，Mapper 接口和 XML 文件的「路径 + 名称」必须一致 -->
+        <!--<package name="com.example.mybatis.mapper"/>-->
+    </mappers>
+</configuration>

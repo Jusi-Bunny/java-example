@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: LangChain4j-Example
+  profiles:
+    active: dev

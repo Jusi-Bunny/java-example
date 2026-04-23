@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.mybatis.mapper.TeacherMapper">
+    <resultMap id="teacherMap" type="teacher">
+        <id property="teacherId" column="teacher_id"/>
+        <result property="teacherName" column="teacher_name"/>
+        <collection property="students" ofType="com.example.mybatis.entity.Student">
+            <id property="studentId" column="student_id"/>
+            <result property="studentName" column="student_name"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectAllTeacherList" resultMap="teacherMap">
+        SELECT t.teacher_id,
+               t.teacher_name,
+               s.student_id,
+               s.student_name
+        FROM teacher t
+                 LEFT JOIN teacher_student ts
+                           ON t.teacher_id = ts.teacher_id
+                 LEFT JOIN student s
+                           ON ts.student_id = s.student_id
+    </select>
+</mapper>

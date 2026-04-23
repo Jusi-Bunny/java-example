@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.mybatis.mapper.BizOrderMapper">
+    <!--
+        使用 resultMap 实现「对一」关系映射
+        id 属性：resultMap 的唯一标识，通常设置为这个 resultMap 所服务的那条 SQL 语句的 id 加上「ResultMap」
+        type 属性：设置为这个 resultMap 所服务的那条 SQL 语句最终的返回的类型
+    -->
+    <resultMap id="selectOrderWithCustomerResultMap" type="com.example.mybatis.entity.BizOrder">
+        <id property="orderId" column="order_id"/>
+        <result property="orderName" column="order_name"/>
+        <result property="customerId" column="customer_id"/>
+
+        <association property="customer" javaType="com.example.mybatis.entity.BizCustomer">
+            <id property="customerId" column="customer_id"/>
+            <result property="customerName" column="customer_name"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="orderMap" type="com.example.mybatis.entity.BizOrder">
+        <id property="orderId" column="order_id"/>
+        <result property="orderName" column="order_name"/>
+        <result property="customerId" column="customer_id"/>
+        <!--
+            association 在这里的作用是触发对一的分步查询
+            property 属性：实体类属性名
+            select 属性：用于指定已经存在的要触发的查询方法的全类名
+            column 属性：触发分步查询传入的参数列名（和数据库列名一致）
+        -->
+        <association property="customer" column="customer_id"
+                     select="com.example.mybatis.mapper.BizCustomerMapper.selectCustomerById"/>
+    </resultMap>
+
+    <select id="selectOrderWithCustomer" resultMap="selectOrderWithCustomerResultMap">
+        SELECT o.order_id,
+               o.order_name,
+               c.customer_id,
+               c.customer_name
+        FROM biz_order o
+                 LEFT JOIN biz_customer c
+                           ON o.customer_id = c.customer_id
+        WHERE o.order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderById" resultMap="orderMap">
+        SELECT order_id,
+               order_name,
+               customer_id
+        FROM biz_order
+        WHERE order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderListByCustomerId" resultType="com.example.mybatis.entity.BizOrder">
+        SELECT order_id,
+               order_name,
+               customer_id
+        FROM biz_order
+        WHERE customer_id = #{customerId};
+    </select>
+</mapper>

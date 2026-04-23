@@ -1,0 +1,27 @@
+server:
+  port: 9091
+
+springdoc:
+  api-docs:
+    enabled: true # 启用 OpenAPI 3 规范的 API 文档生成功能（默认为 true）
+    path: /v3/api-docs # # 修改 API 文档 JSON 数据的访问路径
+  swagger-ui:
+    enabled: true # 启用 Swagger UI 界面（默认为 true）
+    path: /swagger-ui.html # 访问 Swagger UI 界面的访问路径
+
+knife4j:
+  enable: false # 关闭 Knife4j 的增强配置
+  setting:
+    language: zh_cn # 设置 Knife4j 界面语言为简体中文
+
+example:
+  version: 1.0.0
+  swagger:
+    title: Knife4j 项目接口文档 # 项目标题
+    description: 项目接口文档描述 # 项目描述
+    version: ${example.version} # 项目版本
+    url: https://www.example.com # 项目地址
+    author: xxx # 作者
+    email: email@example.com # 邮箱
+    license: Apache 2.0 # 许可
+    license-url: https://www.apache.org/licenses/LICENSE-2.0 # 许可地址

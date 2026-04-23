@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.mybatis.mapper.BizCustomerMapper">
+    <resultMap id="selectCustomerWithOrderListResultMap" type="com.example.mybatis.entity.BizCustomer">
+        <id property="customerId" column="customer_id"/>
+        <result property="customerName" column="customer_name"/>
+
+        <collection property="orders" ofType="com.example.mybatis.entity.BizOrder">
+            <!-- 映射 BizOrder 的属性 -->
+            <id property="orderId" column="order_id"/>
+            <result property="orderName" column="order_name"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="customerMap" type="com.example.mybatis.entity.BizCustomer">
+        <id column="customer_id" property="customerId"/>
+        <result column="customer_name" property="customerName"/>
+        <collection property="orders" column="customer_id"
+                    select="com.example.mybatis.mapper.BizOrderMapper.selectOrderListByCustomerId"/>
+    </resultMap>
+
+    <select id="selectCustomerWithOrderList" resultMap="selectCustomerWithOrderListResultMap">
+        SELECT c.customer_id,
+               c.customer_name,
+               o.order_id,
+               o.order_name
+        FROM biz_customer c
+                 LEFT JOIN biz_order o
+                           ON c.customer_id = o.customer_id
+        WHERE c.customer_id = #{customerId}
+    </select>
+
+    <select id="selectCustomerById" resultType="com.example.mybatis.entity.BizCustomer">
+        SELECT customer_id,
+               customer_name
+        FROM biz_customer
+        WHERE customer_id = #{customerId}
+    </select>
+
+    <select id="selectCustomerList" resultMap="customerMap">
+        SELECT customer_id,
+               customer_name
+        FROM biz_customer
+    </select>
+</mapper>

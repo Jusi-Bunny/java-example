@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    UserMapper 接口的 SQL 映射文件
+    - namespace 属性：对应接口的全类名
+-->
+<mapper namespace="com.example.mybatis.mapper.SysUserMapper">
+    <!-- 开启二级缓存 -->
+    <!--<cache/>-->
+
+    <resultMap id="userResultMap" type="com.example.mybatis.entity.SysUser">
+        <!-- 使用 id 标签设置主键列和主键属性之间的对应关系 -->
+        <!--
+            property 属性用于指定 Java 实体类属性名
+            column 属性用于指定字段名
+        -->
+        <id property="id" column="id"/>
+        <!-- 使用 result 标签设置普通字段和 Java 实体类属性之间的关系 -->
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="accountStatus" column="account_status"/>
+        <result property="lastLoginIp" column="last_login_ip"/>
+        <result property="lastLoginAt" column="last_login_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="isDeleted" column="is_deleted"/>
+    </resultMap>
+
+
+    <!--
+        查询使用 select 标签，在标签内编写 SQL 语句
+        - id 属性：对应接口中的方法名，需完全一致
+        - resultType 属性：返回值类型的全类名
+    -->
+    <!--<select id="selectUserById" resultType="com.example.mybatis.entity.SysUser">-->
+    <!-- #{id} 代表动态传入的参数，并且会进行赋值 -->
+    <select id="selectUserById" resultMap="userResultMap">
+        SELECT id,
+               username,
+               password,
+               nickname,
+               email,
+               phone,
+               avatar_url,
+               account_status,
+               last_login_ip,
+               last_login_at,
+               created_by,
+               created_at,
+               updated_by,
+               updated_at,
+               is_deleted
+        FROM sys_user
+        WHERE is_deleted = 0
+          AND id = #{id}
+    </select>
+
+    <insert id="insertUser" parameterType="com.example.mybatis.entity.SysUser">
+        INSERT INTO sys_user(username, password, nickname, email, phone)
+        VALUES (#{username}, #{password}, #{nickname}, #{email}, #{phone})
+    </insert>
+
+    <select id="selectUserList" resultType="com.example.mybatis.entity.SysUser">
+        SELECT id,
+               username,
+               nickname,
+               email,
+               phone,
+               avatar_url,
+               account_status
+        FROM sys_user
+        WHERE is_deleted = 0
+    </select>
+
+    <select id="selectUserByCondition" resultType="com.example.mybatis.entity.SysUser">
+        SELECT *
+        FROM sys_user
+        WHERE is_deleted = 0
+          AND phone LIKE CONCAT(#{phonePrefix}, '%')
+          AND email LIKE CONCAT('%', #{emailKeyword}, '%')
+    </select>
+
+    <select id="selectLatestLoginUserInfo" resultType="map">
+        SELECT (SELECT username
+                FROM sys_user
+                WHERE is_deleted = 0
+                  AND last_login_at IS NOT NULL
+                ORDER BY last_login_at DESC
+                LIMIT 1) AS 最近登录用户名,
+               (SELECT last_login_at
+                FROM sys_user
+                WHERE is_deleted = 0
+                  AND last_login_at IS NOT NULL
+                ORDER BY last_login_at DESC
+                LIMIT 1) AS 最近登录时间,
+               (SELECT last_login_at
+                FROM sys_user
+                WHERE is_deleted = 0
+                ORDER BY created_at ASC
+                LIMIT 1) AS 首个用户首次登录时间
+    </select>
+
+    <select id="selectUserMapById" resultType="java.util.Map">
+        SELECT id,
+               username,
+               nickname,
+               email,
+               phone,
+               avatar_url,
+               account_status
+        FROM sys_user
+        WHERE is_deleted = 0
+          AND id = #{id}
+    </select>
+
+    <select id="selectUserCount" resultType="int">
+        SELECT COUNT(1)
+        FROM sys_user
+        WHERE is_deleted = 0
+    </select>
+
+    <update id="updateUserPasswordById">
+        UPDATE sys_user
+        SET password = #{password}
+        WHERE id = #{id}
+    </update>
+</mapper>

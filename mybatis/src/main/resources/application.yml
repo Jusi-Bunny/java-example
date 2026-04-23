@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: mybatis
+  profiles:
+    active: dev,local
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
