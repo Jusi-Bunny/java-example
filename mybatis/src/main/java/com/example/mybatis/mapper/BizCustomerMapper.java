@@ -1,9 +1,11 @@
 package com.example.mybatis.mapper;
 
 import com.example.mybatis.entity.BizCustomer;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
+@Mapper
 public interface BizCustomerMapper {
 
     /**
@@ -12,7 +14,7 @@ public interface BizCustomerMapper {
      * @param customerId 客户 ID
      * @return 客户对象
      */
-    BizCustomer selectCustomerWithOrderList(Long customerId);
+    BizCustomer selectCustomerWithOrders(Long customerId);
 
     /**
      * 根据客户 ID,查询客户对象

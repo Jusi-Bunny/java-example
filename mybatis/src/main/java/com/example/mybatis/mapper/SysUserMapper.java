@@ -1,6 +1,7 @@
 package com.example.mybatis.mapper;
 
 import com.example.mybatis.entity.SysUser;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Map;
  * 接口只规定方法、参数和返回值。
  * mapper.xml 中编写具体 SQL 语句
  */
+@Mapper
 public interface SysUserMapper {
 
     /**

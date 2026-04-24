@@ -1,4 +1,4 @@
 package com.example.mybatis.controller;
 
-public class UserController {
+public class SysUserController {
 }

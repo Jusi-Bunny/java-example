@@ -17,6 +17,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
@@ -74,6 +75,13 @@ class MybatisApplicationTests {
         sqlSession.close();
     }
 
+    private final SysUserMapper userMapper;
+
+    @Autowired
+    public MybatisApplicationTests(SysUserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
     @Test
     public void testSelectUserById() {
         // 根据 UserMapper 接口的 Class 对象获取 Mapper 接口类型的对象（动态代理技术）
@@ -82,6 +90,12 @@ class MybatisApplicationTests {
         SysUser user = userMapper.selectUserById(1L);
         System.out.println(user == null ? "null" : user);
         // log.info("user = {}", user);
+    }
+
+    @Test
+    public void testSelectUserByIdV2() {
+        SysUser user = userMapper.selectUserById(1L);
+        System.out.println(user == null ? "null" : user);
     }
 
     @Test
@@ -156,9 +170,9 @@ class MybatisApplicationTests {
     }
 
     @Test
-    public void testSelectCustomerWithOrderList() {
+    public void testSelectCustomerWithOrders() {
         BizCustomerMapper customerMapper = sqlSession.getMapper(BizCustomerMapper.class);
-        BizCustomer customer = customerMapper.selectCustomerWithOrderList(1L);
+        BizCustomer customer = customerMapper.selectCustomerWithOrders(1L);
         System.out.println("customerId = " + customer.getCustomerId());
         System.out.println("customerName = " + customer.getCustomerName());
         for (BizOrder order : customer.getOrders()) {
@@ -210,30 +224,31 @@ class MybatisApplicationTests {
     public void testSelectTeacherPage() {
         TeacherMapper teacherMapper = sqlSession.getMapper(TeacherMapper.class);
 
+        // PageHelper 的 Page 对象实现了 AutoCloseable 接口，在某些版本的 PageHelper 中建议使用 try-with-resources 语句来确保资源正确关闭
         // 将当前页码和每页的行数告诉插件
-        PageHelper.startPage(1, 2);
+        try (var page = PageHelper.startPage(1, 2)) {
+            // 在查询时插件和查询语句不需要建立任何联系，在 MyBatis 配置中配置的插件会自动拦截
+            // 查询 Customer 对象同时将关联的 Order 集合查询出来放到 List 集合中
 
-        // 在查询时插件和查询语句不需要建立任何联系，在 MyBatis 配置中配置的插件会自动拦截
-        // 查询 Customer 对象同时将关联的 Order 集合查询出来放到 List 集合中
+            List<Teacher> teacherList = teacherMapper.selectAllTeacherList();
+            System.out.println("teacherList = " + teacherList);
 
-        List<Teacher> teacherList = teacherMapper.selectAllTeacherList();
-        System.out.println("teacherList = " + teacherList);
+            // 将查询到的结果封装到 PageInfo 中，获取更详细的信息
+            PageInfo<Teacher> teacherPageInfo = new PageInfo<>(teacherList);
+            System.out.println("teacherPageInfo = " + teacherPageInfo);
 
-        // 将查询到的结果封装到 PageInfo 中，获取更详细的信息
-        PageInfo<Teacher> teacherPageInfo = new PageInfo<>(teacherList);
-        System.out.println("teacherPageInfo = " + teacherPageInfo);
-
-        // 获取总页数
-        System.out.println("teacherPageInfo.getPages() = " + teacherPageInfo.getPages());
-        // 获取总记录数
-        System.out.println("teacherPageInfo.getTotal() = " + teacherPageInfo.getTotal());
-        // 获取当前页码
-        System.out.println("teacherPageInfo.getPageNum() = " + teacherPageInfo.getPageNum());
-        // 获取每页显示记录数
-        System.out.println("teacherPageInfo.getPageSize() = " + teacherPageInfo.getPageSize());
-        // 获取查询页的数据集合
-        List<Teacher> teacherPageInfoList = teacherPageInfo.getList();
-        System.out.println("teacherPageInfo.getList() = " + teacherPageInfoList);
-        teacherPageInfoList.forEach(System.out::println);
+            // 获取总页数
+            System.out.println("teacherPageInfo.getPages() = " + teacherPageInfo.getPages());
+            // 获取总记录数
+            System.out.println("teacherPageInfo.getTotal() = " + teacherPageInfo.getTotal());
+            // 获取当前页码
+            System.out.println("teacherPageInfo.getPageNum() = " + teacherPageInfo.getPageNum());
+            // 获取每页显示记录数
+            System.out.println("teacherPageInfo.getPageSize() = " + teacherPageInfo.getPageSize());
+            // 获取查询页的数据集合
+            List<Teacher> teacherPageInfoList = teacherPageInfo.getList();
+            System.out.println("teacherPageInfo.getList() = " + teacherPageInfoList);
+            teacherPageInfoList.forEach(System.out::println);
+        }
     }
 }

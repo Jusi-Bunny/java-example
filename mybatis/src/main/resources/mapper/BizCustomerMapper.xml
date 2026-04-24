@@ -22,7 +22,7 @@
                     select="com.example.mybatis.mapper.BizOrderMapper.selectOrderListByCustomerId"/>
     </resultMap>
 
-    <select id="selectCustomerWithOrderList" resultMap="selectCustomerWithOrderListResultMap">
+    <select id="selectCustomerWithOrders" resultMap="selectCustomerWithOrderListResultMap">
         SELECT c.customer_id,
                c.customer_name,
                o.order_id,
