@@ -2,7 +2,7 @@ package com.example.mybatis;
 
 import com.example.mybatis.entity.User;
 import com.example.mybatis.mapper.UserMapper;
-import lombok.RequiredArgsConstructor;
+import com.example.mybatis.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,9 @@ public class MyBatisPlusApplicationTests {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private UserService userService;
 
     @Test
     public void testSelectList() {
@@ -57,5 +60,12 @@ public class MyBatisPlusApplicationTests {
         System.out.println(("----- deleteById method test ------"));
         int result = userMapper.deleteById(1L);
         System.out.println("result = " + result);
+    }
+
+    @Test
+    public void testSelectUserById() {
+        System.out.println(("----- selectUserById method test ------"));
+        User user = userMapper.selectUserById(1L);
+        System.out.println(user);
     }
 }
