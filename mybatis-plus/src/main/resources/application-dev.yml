@@ -10,17 +10,6 @@ spring:
     username: root
     password: 123456
 
-#mybatis:
-#  # 指定 Mapper XML 文件位置
-#  mapper-locations: classpath:mapper/*.xml
-#  # 实体类别名扫描包
-#  type-aliases-package: com.example.mybatis.entity
-#  configuration:
-#    # 开启下划线转驼峰
-#    map-underscore-to-camel-case: true
-#    # 配置日志
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
 mybatis-plus:
   # 指定 Mapper XML 文件位置
   mapper-locations: classpath*:/mapper/**/*.xml

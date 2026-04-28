@@ -1,5 +1,6 @@
 package com.example.mybatis.common.entity;
 
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
 
 import java.io.Serial;
@@ -35,5 +36,6 @@ public abstract class BaseEntity implements Serializable {
     /**
      * 是否删除：0-未删除，1-已删除
      */
+    @TableLogic(value = "0", delval = "1")
     private Integer isDeleted;
 }

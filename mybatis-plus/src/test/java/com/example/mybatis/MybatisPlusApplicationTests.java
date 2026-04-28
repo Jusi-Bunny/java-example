@@ -3,16 +3,14 @@ package com.example.mybatis;
 import com.example.mybatis.entity.User;
 import com.example.mybatis.mapper.UserMapper;
 import com.example.mybatis.service.UserService;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
-@Slf4j
 @SpringBootTest
-public class MyBatisPlusApplicationTests {
+class MybatisPlusApplicationTests {
 
     @Autowired
     private UserMapper userMapper;
@@ -52,7 +50,6 @@ public class MyBatisPlusApplicationTests {
         user.setName("XiaoMing");
         // 修改
         userMapper.updateById(user);
-
     }
 
     @Test
