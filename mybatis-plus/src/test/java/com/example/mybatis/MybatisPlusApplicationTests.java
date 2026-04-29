@@ -15,9 +15,6 @@ class MybatisPlusApplicationTests {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private UserService userService;
-
     @Test
     public void testSelectList() {
         System.out.println(("----- selectAll method test ------"));
