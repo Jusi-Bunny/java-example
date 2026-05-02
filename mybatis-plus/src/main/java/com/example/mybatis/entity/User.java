@@ -3,8 +3,6 @@ package com.example.mybatis.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 @TableName("user")
 public class User {
@@ -20,4 +18,7 @@ public class User {
 
     @TableField("email")
     private String email;
+
+    @TableLogic
+    private Integer is_deleted;
 }
