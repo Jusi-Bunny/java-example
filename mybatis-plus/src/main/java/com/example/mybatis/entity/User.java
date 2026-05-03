@@ -1,6 +1,7 @@
 package com.example.mybatis.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.example.mybatis.enums.GenderEnum;
 import lombok.Data;
 
 @Data
@@ -21,4 +22,6 @@ public class User {
 
     @TableLogic
     private Integer is_deleted;
+
+    private GenderEnum gender;
 }

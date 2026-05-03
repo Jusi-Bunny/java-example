@@ -9,4 +9,10 @@
         FROM user
         WHERE id = #{id}
     </select>
+
+    <select id="selectByGender" resultType="com.example.mybatis.entity.User">
+        SELECT id, name, gender
+        FROM user
+        WHERE gender = #{gender}
+    </select>
 </mapper>
