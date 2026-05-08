@@ -57,10 +57,12 @@ public class WrapperTest {
     }
 
     @Test
-    public void testIdWorker() {
+    public void testIdWorker() throws Exception {
         for (int i = 0; i < 10; i++) {
             System.out.println(IdWorker.getId());
-            System.out.println(IdWorker.get32UUID());
+            Thread.sleep(2000);
+            // System.out.println(IdWorker.get32UUID());
+            Thread.sleep(2000);
         }
     }
 }
