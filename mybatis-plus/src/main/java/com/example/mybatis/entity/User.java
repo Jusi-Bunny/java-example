@@ -1,12 +1,15 @@
 package com.example.mybatis.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.example.mybatis.common.entity.BaseEntity;
 import com.example.mybatis.enums.GenderEnum;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-@Data
 @TableName("user")
-public class User {
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class User extends BaseEntity {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
