@@ -23,8 +23,8 @@ public class User extends BaseEntity {
     @TableField("email")
     private String email;
 
-    @TableLogic
-    private Integer is_deleted;
+    // @TableLogic
+    // private Integer is_deleted;
 
     private GenderEnum gender;
 }
