@@ -15,4 +15,9 @@
         FROM user
         WHERE gender = #{gender}
     </select>
+
+    <insert id="insertUser">
+        INSERT INTO user (name, age, email, created_by, created_at, updated_by, updated_at)
+        VALUES (#{name}, #{age}, #{email}, #{createdBy}, #{createdAt}, #{updatedBy}, #{updatedAt})
+    </insert>
 </mapper>

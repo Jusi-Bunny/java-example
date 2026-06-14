@@ -19,19 +19,19 @@ public abstract class BaseEntity implements Serializable {
      * 创建人
      */
     @TableField(fill = FieldFill.INSERT)
-    private String createdBy;
+    private Long createdBy;
 
     /**
-     * 创建者标识
+     * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
     /**
-     * 修改者标识
+     * 修改者
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updatedBy;
+    private Long updatedBy;
 
     /**
      * 修改时间

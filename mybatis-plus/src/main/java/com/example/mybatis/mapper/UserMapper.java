@@ -14,4 +14,8 @@ public interface UserMapper extends BaseMapper<User> {
     User selectUserById(Long id);
 
     List<User> selectByGender(@Param("gender") GenderEnum gender);
+
+    int insertUser(User user);
+
+    // int insertUser(@Param("et") User user);
 }
