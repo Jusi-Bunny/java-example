@@ -1,8 +1,5 @@
-server:
-  port: 9093
-  servlet:
-    context-path: /api
-
 spring:
   application:
     name: okhttp
+  profiles:
+    active: dev,local

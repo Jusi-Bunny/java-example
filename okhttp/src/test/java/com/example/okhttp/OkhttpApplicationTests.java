@@ -1,6 +1,7 @@
 package com.example.okhttp;
 
 import okhttp3.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -20,7 +21,7 @@ class OkhttpApplicationTests {
     public void okHttpGetDemo() throws IOException {
 
         Request request = new Request.Builder()
-                .url("http://httpbin.org/get")
+                .url("https://httpbin.org/get")
                 .get()
                 .build();
 
@@ -29,22 +30,10 @@ class OkhttpApplicationTests {
                 throw new RuntimeException("请求失败，状态码：" + response.code());
             }
 
+            Assertions.assertNotNull(response.body());
             String result = response.body().string();
             System.out.println(result);
         }
-    }
-
-    /**
-     * 带 Header 的请求
-     */
-    @Test
-    public void okHttpHeaderDemo() throws IOException {
-        Request request = new Request.Builder()
-                .url("http://httpbin.org/get")
-                .addHeader("Authorization", "Bearer xxx")
-                .addHeader("Content-Type", "application/json")
-                .get()
-                .build();
     }
 
     /**
@@ -62,7 +51,7 @@ class OkhttpApplicationTests {
         RequestBody requestBody = RequestBody.create(json, JSON);
 
         Request request = new Request.Builder()
-                .url("http://httpbin.org/post")
+                .url("https://httpbin.org/post")
                 .post(requestBody)
                 .build();
 
@@ -71,6 +60,31 @@ class OkhttpApplicationTests {
                 throw new RuntimeException("请求失败，状态码：" + response.code());
             }
 
+            Assertions.assertNotNull(response.body());
+            String result = response.body().string();
+            System.out.println(result);
+        }
+    }
+
+    /**
+     * 带 Header 的请求
+     */
+    @Test
+    public void okHttpHeaderDemo() throws IOException {
+
+        Request request = new Request.Builder()
+                .url("https://httpbin.org/get")
+                .addHeader("Authorization", "Bearer xxx")
+                .addHeader("Content-Type", "application/json")
+                .get()
+                .build();
+
+        try (Response response = CLIENT.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("请求失败，状态码：" + response.code());
+            }
+
+            Assertions.assertNotNull(response.body());
             String result = response.body().string();
             System.out.println(result);
         }

@@ -16,7 +16,7 @@ public abstract class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 创建人
+     * 创建人 ID
      */
     @TableField(fill = FieldFill.INSERT)
     private Long createdBy;
@@ -28,7 +28,7 @@ public abstract class BaseEntity implements Serializable {
     private LocalDateTime createdAt;
 
     /**
-     * 修改者
+     * 修改人 ID
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updatedBy;
