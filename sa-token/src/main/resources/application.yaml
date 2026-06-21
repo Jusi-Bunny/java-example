@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: sa-token
+  profiles:
+    active: dev,local
