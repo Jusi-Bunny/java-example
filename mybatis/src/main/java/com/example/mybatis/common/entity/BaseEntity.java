@@ -18,7 +18,7 @@ public abstract class BaseEntity implements Serializable {
     private Long createdBy;
 
     /**
-     * 创建者标识
+     * 创建时间
      */
     private LocalDateTime createdAt;
 
