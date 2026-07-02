@@ -2,7 +2,6 @@ package com.example.mybatis;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.example.mybatis.entity.User;
@@ -54,15 +53,5 @@ public class WrapperTest {
         User user = userService.getById(1L);
         System.out.println(user);
         userService.removeById(1L);
-    }
-
-    @Test
-    public void testIdWorker() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            System.out.println(IdWorker.getId());
-            Thread.sleep(2000);
-            // System.out.println(IdWorker.get32UUID());
-            Thread.sleep(2000);
-        }
     }
 }

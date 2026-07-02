@@ -1,0 +1,13 @@
+server:
+  port: 9095
+  servlet:
+    context-path: /api
+
+storage:
+  type: minio
+
+minio:
+  endpoint: http://127.0.0.1:9000
+  access-key: admin
+  secret-key: XTMQO9BV5Z3QL38R385Z6O1V7Q9QOQ4U
+  bucket: test
