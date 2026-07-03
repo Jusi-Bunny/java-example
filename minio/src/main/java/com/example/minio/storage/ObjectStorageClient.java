@@ -1,5 +1,8 @@
-package com.example.minio.client;
+package com.example.minio.storage;
 
+import com.example.minio.request.PresignedUploadRequest;
+import com.example.minio.response.FileUploadResponse;
+import com.example.minio.response.PresignedUploadResponse;
 import io.minio.GetObjectResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,8 +11,7 @@ public interface ObjectStorageClient {
     /**
      * 上传文件并返回对象存储中的 object key。
      */
-    String upload(MultipartFile file, String bizDir);
-
+    FileUploadResponse upload(MultipartFile file);
 
     /**
      * 获取对象存储中的文件。
@@ -24,5 +26,10 @@ public interface ObjectStorageClient {
     /**
      * 获取对象存储中的文件上传签名 PUT URL
      */
-    String getPresignedUploadUrl(String objectName);
+    PresignedUploadResponse getPresignedUploadUrl(PresignedUploadRequest req);
+
+    /**
+     * 删除对象存储中的文件。
+     */
+    void delete(String objectName);
 }

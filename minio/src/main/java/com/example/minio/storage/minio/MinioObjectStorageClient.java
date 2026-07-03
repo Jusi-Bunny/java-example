@@ -1,6 +1,11 @@
-package com.example.minio.client;
+package com.example.minio.storage.minio;
 
 import com.example.minio.config.MinioProperties;
+import com.example.minio.request.PresignedUploadRequest;
+import com.example.minio.response.FileUploadResponse;
+import com.example.minio.response.PresignedUploadResponse;
+import com.example.minio.storage.ObjectStorageClient;
+import com.example.minio.storage.ObjectStorageException;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,11 +27,15 @@ public class MinioObjectStorageClient implements ObjectStorageClient {
 
     private final MinioProperties properties;
 
+    private final String DEFAULT_UPLOAD_DIR = "upload";
+
     @Override
-    public String upload(MultipartFile file, String bizDir) {
+    public FileUploadResponse upload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new ObjectStorageException("上传文件不能为空");
         }
+
+        FileUploadResponse response = new FileUploadResponse();
 
         try {
             ensureBucketExists();
@@ -34,7 +43,7 @@ public class MinioObjectStorageClient implements ObjectStorageClient {
             String originalFilename = file.getOriginalFilename();
             String ext = StringUtils.getFilenameExtension(originalFilename);
 
-            String objectName = buildObjectName(bizDir, ext);
+            String objectName = buildObjectName(DEFAULT_UPLOAD_DIR, ext);
 
             String contentType = file.getContentType();
             if (!StringUtils.hasText(contentType)) {
@@ -51,8 +60,11 @@ public class MinioObjectStorageClient implements ObjectStorageClient {
                                 .build()
                 );
             }
-
-            return objectName;
+            response.setObjectName(objectName);
+            response.setOriginalName(file.getOriginalFilename());
+            response.setContentType(file.getContentType());
+            response.setSize(file.getSize());
+            return response;
         } catch (Exception e) {
             throw new ObjectStorageException("上传文件到 MinIO 失败", e);
         }
@@ -68,10 +80,68 @@ public class MinioObjectStorageClient implements ObjectStorageClient {
                             .build()
             );
         } catch (Exception e) {
-            throw new RuntimeException("从 MinIO 下载文件失败", e);
+            throw new ObjectStorageException("从 MinIO 下载文件失败", e);
         }
     }
 
+    @Override
+    public String getPresignedDownloadUrl(String objectName) {
+        try {
+            return minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Http.Method.GET)
+                            .bucket(properties.getBucket())
+                            .object(objectName)
+                            .expiry(10, TimeUnit.MINUTES)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new ObjectStorageException("生成预签名下载 URL 失败", e);
+        }
+    }
+
+    @Override
+    public PresignedUploadResponse getPresignedUploadUrl(PresignedUploadRequest req) {
+        PresignedUploadResponse response = new PresignedUploadResponse();
+        try {
+
+            String ext = StringUtils.getFilenameExtension(req.getFileName());
+            String objectName = buildObjectName(DEFAULT_UPLOAD_DIR, ext);
+            String uploadUrl = minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Http.Method.PUT)
+                            .bucket(properties.getBucket())
+                            .object(objectName)
+                            .expiry(10, TimeUnit.MINUTES)
+                            .build()
+            );
+            response.setUploadUrl(uploadUrl);
+            response.setObjectName(objectName);
+            response.setExpireSeconds(10 * 60);
+            return response;
+        } catch (Exception e) {
+            throw new ObjectStorageException("生成预签名上传 URL 失败", e);
+        }
+    }
+
+    @Override
+    public void delete(String objectName) {
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(properties.getBucket())
+                            .object(objectName)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new ObjectStorageException("删除 MinIO 文件失败", e);
+        }
+    }
+
+    /**
+     * 确保 Bucket 存在，如果不存在则创建
+     *
+     */
     private void ensureBucketExists() throws Exception {
         boolean exists = minioClient.bucketExists(
                 BucketExistsArgs.builder()
@@ -88,38 +158,13 @@ public class MinioObjectStorageClient implements ObjectStorageClient {
         }
     }
 
-    @Override
-    public String getPresignedDownloadUrl(String objectName) {
-        try {
-            return minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .method(Http.Method.GET)
-                            .bucket(properties.getBucket())
-                            .object(objectName)
-                            .expiry(10, TimeUnit.MINUTES)
-                            .build()
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("生成预签名下载 URL 失败", e);
-        }
-    }
-
-    @Override
-    public String getPresignedUploadUrl(String objectName) {
-        try {
-            return minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .method(Http.Method.PUT)
-                            .bucket(properties.getBucket())
-                            .object(objectName)
-                            .expiry(10, TimeUnit.MINUTES)
-                            .build()
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("生成预签名上传 URL 失败", e);
-        }
-    }
-
+    /**
+     * 构建对象名称，格式为：业务目录/年/月/日/uuid.ext
+     *
+     * @param bizDir 业务目录
+     * @param ext    文件扩展名
+     * @return 对象名称
+     */
     private String buildObjectName(String bizDir, String ext) {
         LocalDate now = LocalDate.now();
 
@@ -136,6 +181,12 @@ public class MinioObjectStorageClient implements ObjectStorageClient {
                 + filename;
     }
 
+    /**
+     * 格式化业务目录，删除多余的斜杠，并添加默认值 "default"
+     *
+     * @param bizDir 业务目录
+     * @return 格式化后的业务目录
+     */
     private String normalizeBizDir(String bizDir) {
         if (!StringUtils.hasText(bizDir)) {
             return "default";

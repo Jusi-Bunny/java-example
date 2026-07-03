@@ -1,4 +1,4 @@
-package com.example.minio.client;
+package com.example.minio.storage;
 
 public class ObjectStorageException extends RuntimeException {
 

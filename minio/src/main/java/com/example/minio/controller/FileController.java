@@ -1,9 +1,13 @@
 package com.example.minio.controller;
 
-import com.example.minio.client.ObjectStorageClient;
+import com.example.minio.common.result.Result;
+import com.example.minio.request.PresignedUploadRequest;
+import com.example.minio.response.FileUploadResponse;
+import com.example.minio.response.PresignedUploadResponse;
+import com.example.minio.storage.ObjectStorageClient;
 import io.minio.GetObjectResponse;
+
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,29 +20,13 @@ public class FileController {
     private final ObjectStorageClient objectStorageClient;
 
     @PostMapping("/upload")
-    public FileUploadVO upload(@RequestParam("file") MultipartFile file) {
-        String objectName = objectStorageClient.upload(file, "upload");
-
-        FileUploadVO vo = new FileUploadVO();
-        vo.setObjectName(objectName);
-        vo.setOriginalName(file.getOriginalFilename());
-        vo.setContentType(file.getContentType());
-        vo.setSize(file.getSize());
-
-        return vo;
-    }
-
-    @Data
-    public static class FileUploadVO {
-        private String objectName;
-        private String originalName;
-        private String contentType;
-        private Long size;
+    public Result<FileUploadResponse> upload(@RequestParam("file") MultipartFile file) {
+        return Result.ok(objectStorageClient.upload(file));
     }
 
     @GetMapping("/download")
-    public void download(@RequestParam String objectName,
-                         HttpServletResponse response) {
+    public Result<Void> download(@RequestParam String objectName,
+                                 HttpServletResponse response) {
         try (GetObjectResponse inputStream = objectStorageClient.getObject(objectName)) {
             response.setContentType("application/octet-stream");
 
@@ -46,10 +34,22 @@ public class FileController {
         } catch (Exception e) {
             throw new RuntimeException("下载文件失败", e);
         }
+        return Result.ok();
     }
 
     @GetMapping("/download-url")
-    public String getDownloadUrl(@RequestParam String objectName) {
-        return objectStorageClient.getPresignedDownloadUrl(objectName);
+    public Result<String> getDownloadUrl(@RequestParam String objectName) {
+        return Result.ok(objectStorageClient.getPresignedDownloadUrl(objectName));
+    }
+
+    @PostMapping("/presigned-upload-url")
+    public Result<PresignedUploadResponse> getUploadUrl(@RequestBody PresignedUploadRequest req) {
+        return Result.ok(objectStorageClient.getPresignedUploadUrl(req));
+    }
+
+    @DeleteMapping("/delete")
+    public Result<String> delete(@RequestParam String objectName) {
+        objectStorageClient.delete(objectName);
+        return Result.ok("删除成功");
     }
 }
