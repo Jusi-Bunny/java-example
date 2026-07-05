@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MinIO 分片上传 Demo</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f7f8fa;
+            color: #1f2937;
+        }
+
+        main {
+            max-width: 860px;
+            margin: 40px auto;
+            padding: 24px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        label,
+        button,
+        input {
+            font-size: 14px;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        button {
+            border: 0;
+            border-radius: 6px;
+            padding: 8px 14px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        progress {
+            width: 100%;
+            height: 18px;
+        }
+
+        pre {
+            min-height: 260px;
+            max-height: 420px;
+            overflow: auto;
+            padding: 12px;
+            background: #111827;
+            color: #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>MinIO 分片上传 Demo</h1>
+
+    <div class="row">
+        <label>
+            后端地址：
+            <input id="apiBase" value="http://127.0.0.1:9095/api" size="32" />
+        </label>
+    </div>
+
+    <div class="row">
+        <input id="fileInput" type="file" />
+        <button id="uploadBtn">开始上传</button>
+        <button id="abortBtn" disabled>取消上传</button>
+    </div>
+
+    <progress id="progress" value="0" max="100"></progress>
+    <pre id="log"></pre>
+</main>
+
+<script>
+    const fileInput = document.querySelector('#fileInput');
+    const uploadBtn = document.querySelector('#uploadBtn');
+    const abortBtn = document.querySelector('#abortBtn');
+    const progressEl = document.querySelector('#progress');
+    const logEl = document.querySelector('#log');
+    const apiBaseInput = document.querySelector('#apiBase');
+
+    const DEFAULT_PART_SIZE = 10 * 1024 * 1024;
+    const CONCURRENCY = 4;
+    const MAX_RETRY = 3;
+
+    let currentUpload = null;
+    let aborted = false;
+
+    uploadBtn.addEventListener('click', uploadSelectedFile);
+    abortBtn.addEventListener('click', abortCurrentUpload);
+
+    async function uploadSelectedFile() {
+        const file = fileInput.files[0];
+        if (!file) {
+            appendLog('请选择文件');
+            return;
+        }
+
+        aborted = false;
+        uploadBtn.disabled = true;
+        abortBtn.disabled = false;
+        progressEl.value = 0;
+        logEl.textContent = '';
+
+        try {
+            appendLog(`文件：${file.name}`);
+            appendLog(`大小：${formatBytes(file.size)}`);
+            appendLog('计算 SHA-256...');
+
+            const fileHash = await sha256(file);
+            appendLog(`SHA-256：${fileHash}`);
+
+            const initResp = await postJson('/files/multipart/init', {
+                fileName: file.name,
+                fileSize: file.size,
+                fileHash,
+                contentType: file.type || 'application/octet-stream',
+                partSize: DEFAULT_PART_SIZE
+            });
+
+            const init = unwrap(initResp);
+
+            if (init.instant) {
+                progressEl.value = 100;
+                appendLog(`秒传成功：${init.objectName}`);
+                return;
+            }
+
+            currentUpload = {
+                uploadId: init.uploadId,
+                objectName: init.objectName,
+                partSize: init.partSize,
+                partCount: init.partCount
+            };
+
+            appendLog(`uploadId：${init.uploadId}`);
+            appendLog(`objectName：${init.objectName}`);
+            appendLog(`partSize：${formatBytes(init.partSize)}`);
+            appendLog(`partCount：${init.partCount}`);
+
+            const uploadedPartNumbers = new Set((init.uploadedParts || []).map(part => part.partNumber));
+            appendLog(`已上传分片：${uploadedPartNumbers.size}`);
+
+            const tasks = [];
+            for (let partNumber = 1; partNumber <= init.partCount; partNumber++) {
+                if (!uploadedPartNumbers.has(partNumber)) {
+                    tasks.push(() => uploadOnePart(file, currentUpload, partNumber));
+                }
+            }
+
+            let completed = uploadedPartNumbers.size;
+            updateProgress(completed, init.partCount);
+
+            await runWithConcurrency(tasks, CONCURRENCY, () => {
+                completed++;
+                updateProgress(completed, init.partCount);
+            });
+
+            if (aborted) {
+                appendLog('上传已取消');
+                return;
+            }
+
+            appendLog('所有分片上传完成，开始合并...');
+            const completeResp = await postJson('/files/multipart/complete', {
+                uploadId: currentUpload.uploadId,
+                objectName: currentUpload.objectName
+            });
+
+            const completedFile = unwrap(completeResp);
+            progressEl.value = 100;
+            appendLog(`合并完成：${completedFile.objectName}`);
+        } catch (error) {
+            appendLog(`失败：${error.message || error}`);
+        } finally {
+            uploadBtn.disabled = false;
+            abortBtn.disabled = true;
+        }
+    }
+
+    async function uploadOnePart(file, upload, partNumber) {
+        if (aborted) {
+            return;
+        }
+
+        const start = (partNumber - 1) * upload.partSize;
+        const end = Math.min(start + upload.partSize, file.size);
+        const blob = file.slice(start, end);
+
+        for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
+            try {
+                const partUrlResp = await postJson('/files/multipart/part-url', {
+                    uploadId: upload.uploadId,
+                    objectName: upload.objectName,
+                    partNumber
+                });
+                const partUrl = unwrap(partUrlResp);
+
+                const uploadResp = await fetch(partUrl.uploadUrl, {
+                    method: 'PUT',
+                    body: blob
+                });
+
+                if (!uploadResp.ok) {
+                    throw new Error(`Part ${partNumber} 上传失败，HTTP ${uploadResp.status}`);
+                }
+
+                const rawEtag = uploadResp.headers.get('ETag');
+                if (!rawEtag) {
+                    throw new Error(`Part ${partNumber} 上传成功但未读取到 ETag，请检查 MinIO CORS ExposeHeaders`);
+                }
+
+                await postJson('/files/multipart/part-complete', {
+                    uploadId: upload.uploadId,
+                    partNumber,
+                    etag: rawEtag.replaceAll('"', '')
+                });
+
+                appendLog(`Part ${partNumber} 上传完成`);
+                return;
+            } catch (error) {
+                appendLog(`Part ${partNumber} 第 ${attempt} 次失败：${error.message || error}`);
+                if (attempt === MAX_RETRY) {
+                    throw error;
+                }
+                await sleep(500 * attempt);
+            }
+        }
+    }
+
+    async function abortCurrentUpload() {
+        aborted = true;
+
+        if (!currentUpload) {
+            return;
+        }
+
+        try {
+            await postJson('/files/multipart/abort', {
+                uploadId: currentUpload.uploadId,
+                objectName: currentUpload.objectName
+            });
+            appendLog('已请求后端取消上传');
+        } catch (error) {
+            appendLog(`取消上传失败：${error.message || error}`);
+        }
+    }
+
+    async function runWithConcurrency(tasks, concurrency, onTaskDone) {
+        let nextIndex = 0;
+
+        async function worker() {
+            while (nextIndex < tasks.length) {
+                if (aborted) {
+                    return;
+                }
+
+                const task = tasks[nextIndex++];
+                await task();
+                onTaskDone();
+            }
+        }
+
+        const workers = Array.from(
+            { length: Math.min(concurrency, tasks.length) },
+            () => worker()
+        );
+
+        await Promise.all(workers);
+    }
+
+    async function sha256(file) {
+        const buffer = await file.arrayBuffer();
+        const digest = await crypto.subtle.digest('SHA-256', buffer);
+        return Array.from(new Uint8Array(digest))
+            .map(byte => byte.toString(16).padStart(2, '0'))
+            .join('');
+    }
+
+    async function postJson(path, body) {
+        const response = await fetch(`${apiBaseInput.value}${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            throw new Error(`后端请求失败：${response.status}`);
+        }
+
+        return response.json();
+    }
+
+    function unwrap(result) {
+        if (result.code !== 0) {
+            throw new Error(result.message || '业务请求失败');
+        }
+        return result.data;
+    }
+
+    function updateProgress(completed, total) {
+        progressEl.value = total === 0 ? 0 : Math.round((completed / total) * 100);
+    }
+
+    function appendLog(message) {
+        logEl.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) {
+            return `${bytes} B`;
+        }
+        if (bytes < 1024 * 1024) {
+            return `${(bytes / 1024).toFixed(2)} KiB`;
+        }
+        if (bytes < 1024 * 1024 * 1024) {
+            return `${(bytes / 1024 / 1024).toFixed(2)} MiB`;
+        }
+        return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GiB`;
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+</script>
+</body>
+</html>

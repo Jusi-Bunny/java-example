@@ -1,5 +1,6 @@
 package com.example.minio.config;
 
+import io.minio.MinioAsyncClient;
 import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,6 +17,14 @@ public class MinioConfig {
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
+                .endpoint(properties.getEndpoint())
+                .credentials(properties.getAccessKey(), properties.getSecretKey())
+                .build();
+    }
+
+    @Bean
+    public MinioAsyncClient minioAsyncClient() {
+        return MinioAsyncClient.builder()
                 .endpoint(properties.getEndpoint())
                 .credentials(properties.getAccessKey(), properties.getSecretKey())
                 .build();
