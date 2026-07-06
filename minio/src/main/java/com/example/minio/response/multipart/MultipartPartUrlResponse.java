@@ -1,8 +1,15 @@
 package com.example.minio.response.multipart;
 
-public record MultipartPartUrlResponse(
-        Integer partNumber,
-        String uploadUrl,
-        Integer expireSeconds
-) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class MultipartPartUrlResponse {
+
+    private Integer partNumber;
+
+    private String uploadUrl;
+
+    private Integer expireSeconds;
 }

@@ -9,11 +9,11 @@ public class WebCorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/files/**")
+        registry.addMapping("/files/**") // 只开放文件相关接口
                 .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .exposedHeaders("ETag")
+                .exposedHeaders("ETag") // 保留给需要读取响应头的场景，MinIO bucket 自身也要暴露 ETag
                 .allowCredentials(false)
                 .maxAge(3600);
     }

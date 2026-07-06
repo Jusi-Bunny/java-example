@@ -1,10 +1,19 @@
 package com.example.minio.storage.minio;
 
-public record StoredFileRecord(
-        String objectName,
-        String originalName,
-        String contentType,
-        Long size,
-        String fileHash
-) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class StoredFileRecord {
+
+    private String objectName;
+
+    private String originalName;
+
+    private String contentType;
+
+    private Long size;
+
+    private String fileHash;
 }

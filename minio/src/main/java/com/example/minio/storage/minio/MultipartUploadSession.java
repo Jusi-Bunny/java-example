@@ -1,9 +1,13 @@
 package com.example.minio.storage.minio;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Getter
 public class MultipartUploadSession {
 
     private final String uploadId;
@@ -15,6 +19,7 @@ public class MultipartUploadSession {
     private final Long partSize;
     private final Integer partCount;
     private final Map<Integer, UploadedPart> uploadedParts = new ConcurrentHashMap<>();
+    @Setter
     private volatile MultipartUploadStatus status = MultipartUploadStatus.UPLOADING;
     private final LocalDateTime createdAt = LocalDateTime.now();
 
@@ -36,51 +41,4 @@ public class MultipartUploadSession {
         this.partCount = partCount;
     }
 
-    public String getUploadId() {
-        return uploadId;
-    }
-
-    public String getObjectName() {
-        return objectName;
-    }
-
-    public String getOriginalName() {
-        return originalName;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public Long getFileSize() {
-        return fileSize;
-    }
-
-    public String getFileHash() {
-        return fileHash;
-    }
-
-    public Long getPartSize() {
-        return partSize;
-    }
-
-    public Integer getPartCount() {
-        return partCount;
-    }
-
-    public Map<Integer, UploadedPart> getUploadedParts() {
-        return uploadedParts;
-    }
-
-    public MultipartUploadStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(MultipartUploadStatus status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
 }

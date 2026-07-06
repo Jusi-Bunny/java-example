@@ -1,7 +1,13 @@
 package com.example.minio.response.multipart;
 
-public record UploadedPartResponse(
-        Integer partNumber,
-        String etag
-) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class UploadedPartResponse {
+
+    private Integer partNumber;
+
+    private String etag;
 }
