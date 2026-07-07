@@ -42,7 +42,6 @@ public class MultipartUploadService {
     public MultipartInitResponse init(MultipartInitRequest req) {
         validateInitRequest(req);
 
-        // 秒传（实际项目中需要查询数据库）
         String fileKey = fileKey(req.getFileHash(), req.getFileSize());
         StoredFileRecord storedFile = fileIndex.get(fileKey);
 
@@ -60,7 +59,7 @@ public class MultipartUploadService {
         String activeUploadId = activeSessionByFileKey.get(fileKey);
         MultipartUploadSession activeSession = activeUploadId == null ? null : sessions.get(activeUploadId);
 
-        if (activeSession != null && activeSession.getStatus() == MultipartUploadStatus.UPLOADING) {
+        if (activeSession != null && isActiveSession(activeSession)) {
             return toInitResponse(false, activeSession);
         }
 
@@ -105,11 +104,9 @@ public class MultipartUploadService {
     }
 
     public MultipartPartUrlResponse getPartUrl(MultipartPartUrlRequest req) {
-        MultipartUploadSession session = requireUploadingSession(req.getUploadId());
+        MultipartUploadSession session = requireSessionWithStatus(req.getUploadId(), MultipartUploadStatus.UPLOADING);
 
-        if (!session.getObjectName().equals(req.getObjectName())) {
-            throw new IllegalArgumentException("objectName 与上传会话不匹配");
-        }
+        validateObjectName(session, req.getObjectName());
         if (req.getPartNumber() == null || req.getPartNumber() < 1 || req.getPartNumber() > session.getPartCount()) {
             throw new IllegalArgumentException("partNumber 不合法");
         }
@@ -135,7 +132,7 @@ public class MultipartUploadService {
     }
 
     public void completePart(MultipartPartCompleteRequest req) {
-        MultipartUploadSession session = requireUploadingSession(req.getUploadId());
+        MultipartUploadSession session = requirePartCompletionSession(req.getUploadId());
 
         if (req.getPartNumber() == null || req.getPartNumber() < 1 || req.getPartNumber() > session.getPartCount()) {
             throw new IllegalArgumentException("partNumber 不合法");
@@ -148,12 +145,26 @@ public class MultipartUploadService {
         session.getUploadedParts().put(req.getPartNumber(), new UploadedPart(req.getPartNumber(), etag));
     }
 
-    public MultipartCompleteResponse complete(MultipartCompleteRequest req) {
-        MultipartUploadSession session = requireUploadingSession(req.getUploadId());
+    public MultipartStatusResponse pause(MultipartPauseRequest req) {
+        MultipartUploadSession session = requireSessionWithStatus(req.getUploadId(), MultipartUploadStatus.UPLOADING);
+        validateObjectName(session, req.getObjectName());
 
-        if (!session.getObjectName().equals(req.getObjectName())) {
-            throw new IllegalArgumentException("objectName 与上传会话不匹配");
-        }
+        session.setStatus(MultipartUploadStatus.PAUSED);
+        return toStatusResponse(session);
+    }
+
+    public MultipartStatusResponse resume(MultipartResumeRequest req) {
+        MultipartUploadSession session = requireSessionWithStatus(req.getUploadId(), MultipartUploadStatus.PAUSED);
+        validateObjectName(session, req.getObjectName());
+
+        session.setStatus(MultipartUploadStatus.UPLOADING);
+        return toStatusResponse(session);
+    }
+
+    public MultipartCompleteResponse complete(MultipartCompleteRequest req) {
+        MultipartUploadSession session = requireSessionWithStatus(req.getUploadId(), MultipartUploadStatus.UPLOADING);
+
+        validateObjectName(session, req.getObjectName());
         if (session.getUploadedParts().size() != session.getPartCount()) {
             throw new IllegalStateException("分片未全部上传完成");
         }
@@ -200,27 +211,17 @@ public class MultipartUploadService {
     }
 
     public MultipartStatusResponse status(String uploadId) {
-        MultipartUploadSession session = sessions.get(uploadId);
-        if (session == null) {
-            throw new IllegalArgumentException("上传会话不存在");
-        }
-
-        return new MultipartStatusResponse(
-                session.getUploadId(),
-                session.getObjectName(),
-                session.getStatus().name(),
-                session.getPartSize(),
-                session.getPartCount(),
-                toUploadedPartResponses(session)
-        );
+        return toStatusResponse(requireSession(uploadId));
     }
 
     public void abort(MultipartAbortRequest req) {
-        MultipartUploadSession session = requireUploadingSession(req.getUploadId());
+        MultipartUploadSession session = requireSessionWithStatus(
+                req.getUploadId(),
+                MultipartUploadStatus.UPLOADING,
+                MultipartUploadStatus.PAUSED
+        );
 
-        if (!session.getObjectName().equals(req.getObjectName())) {
-            throw new IllegalArgumentException("objectName 与上传会话不匹配");
-        }
+        validateObjectName(session, req.getObjectName());
 
         try {
             minioAsyncClient.abortMultipartUpload(
@@ -238,9 +239,6 @@ public class MultipartUploadService {
         }
     }
 
-    /**
-     * 校验初始化请求
-     */
     private void validateInitRequest(MultipartInitRequest req) {
         if (req == null) {
             throw new IllegalArgumentException("请求不能为空");
@@ -256,10 +254,7 @@ public class MultipartUploadService {
         }
     }
 
-    /**
-     * 获取上传会话
-     */
-    private MultipartUploadSession requireUploadingSession(String uploadId) {
+    private MultipartUploadSession requireSession(String uploadId) {
         if (!StringUtils.hasText(uploadId)) {
             throw new IllegalArgumentException("uploadId 不能为空");
         }
@@ -268,16 +263,31 @@ public class MultipartUploadService {
         if (session == null) {
             throw new IllegalArgumentException("上传会话不存在");
         }
-        if (session.getStatus() != MultipartUploadStatus.UPLOADING) {
-            throw new IllegalStateException("上传会话不是上传中状态");
-        }
 
         return session;
     }
 
-    /**
-     * 转换初始化响应
-     */
+    private MultipartUploadSession requireSessionWithStatus(String uploadId, MultipartUploadStatus... allowedStatuses) {
+        MultipartUploadSession session = requireSession(uploadId);
+
+        for (MultipartUploadStatus allowedStatus : allowedStatuses) {
+            if (session.getStatus() == allowedStatus) {
+                return session;
+            }
+        }
+
+        throw new IllegalStateException("上传会话当前状态不允许此操作，当前状态：" + session.getStatus().name());
+    }
+
+    private MultipartUploadSession requirePartCompletionSession(String uploadId) {
+        MultipartUploadSession session = requireSession(uploadId);
+        if (session.getStatus() == MultipartUploadStatus.ABORTED
+                || session.getStatus() == MultipartUploadStatus.COMPLETED) {
+            throw new IllegalStateException("上传会话当前状态不允许登记分片完成，当前状态：" + session.getStatus().name());
+        }
+        return session;
+    }
+
     private MultipartInitResponse toInitResponse(boolean instant, MultipartUploadSession session) {
         return new MultipartInitResponse(
                 instant,
@@ -289,9 +299,19 @@ public class MultipartUploadService {
         );
     }
 
-    /**
-     * 转换已上传的分片信息
-     */
+    private MultipartStatusResponse toStatusResponse(MultipartUploadSession session) {
+        return new MultipartStatusResponse(
+                session.getUploadId(),
+                session.getObjectName(),
+                session.getOriginalName(),
+                session.getFileSize(),
+                session.getStatus().name(),
+                session.getPartSize(),
+                session.getPartCount(),
+                toUploadedPartResponses(session)
+        );
+    }
+
     private List<UploadedPartResponse> toUploadedPartResponses(MultipartUploadSession session) {
         return session.getUploadedParts()
                 .values()
@@ -301,9 +321,6 @@ public class MultipartUploadService {
                 .toList();
     }
 
-    /**
-     * 选择分片大小，默认 10M，最小 5M，最大 5G，最大分片数 10000
-     */
     private long choosePartSize(long fileSize, Long requestedPartSize) {
         long partSize = requestedPartSize == null ? DEFAULT_PART_SIZE : requestedPartSize;
         partSize = Math.max(partSize, MIN_PART_SIZE);
@@ -314,9 +331,6 @@ public class MultipartUploadService {
         return partSize;
     }
 
-    /**
-     * 计算分片数量
-     */
     private int calculatePartCount(long fileSize, long partSize) {
         long count = (long) Math.ceil(fileSize / (double) partSize);
         if (count > MAX_PART_COUNT) {
@@ -325,9 +339,6 @@ public class MultipartUploadService {
         return (int) count;
     }
 
-    /**
-     * 判断对象是否存在
-     */
     private boolean objectExists(String objectName) {
         try {
             minioClient.statObject(
@@ -342,9 +353,6 @@ public class MultipartUploadService {
         }
     }
 
-    /**
-     * 确保 bucket 存在
-     */
     private void ensureBucketExists() {
         try {
             boolean exists = minioClient.bucketExists(
@@ -365,13 +373,6 @@ public class MultipartUploadService {
         }
     }
 
-    /**
-     * 构建对象名
-     *
-     * @param bizDir           业务目录
-     * @param originalFilename 原始文件名
-     * @return 对象名
-     */
     private String buildObjectName(String bizDir, String originalFilename) {
         LocalDate now = LocalDate.now();
         String ext = StringUtils.getFilenameExtension(originalFilename);
@@ -388,24 +389,21 @@ public class MultipartUploadService {
                 + filename;
     }
 
-
-    /**
-     * 生成秒传 key
-     *
-     * @param fileHash 文件摘要
-     * @param fileSize 文件大小
-     * @return 秒传 key
-     */
     private String fileKey(String fileHash, Long fileSize) {
         return fileHash + ":" + fileSize;
     }
 
-    /**
-     * 标准化 ETag
-     *
-     * @param etag ETag
-     * @return 标准化后的 ETag
-     */
+    private boolean isActiveSession(MultipartUploadSession session) {
+        return session.getStatus() == MultipartUploadStatus.UPLOADING
+                || session.getStatus() == MultipartUploadStatus.PAUSED;
+    }
+
+    private void validateObjectName(MultipartUploadSession session, String objectName) {
+        if (!session.getObjectName().equals(objectName)) {
+            throw new IllegalArgumentException("objectName 与上传会话不匹配");
+        }
+    }
+
     private String normalizeEtag(String etag) {
         return etag.trim().replace("\"", "");
     }

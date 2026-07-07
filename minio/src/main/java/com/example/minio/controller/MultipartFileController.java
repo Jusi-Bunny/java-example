@@ -4,8 +4,10 @@ import com.example.minio.common.result.Result;
 import com.example.minio.request.multipart.MultipartAbortRequest;
 import com.example.minio.request.multipart.MultipartCompleteRequest;
 import com.example.minio.request.multipart.MultipartInitRequest;
+import com.example.minio.request.multipart.MultipartPauseRequest;
 import com.example.minio.request.multipart.MultipartPartCompleteRequest;
 import com.example.minio.request.multipart.MultipartPartUrlRequest;
+import com.example.minio.request.multipart.MultipartResumeRequest;
 import com.example.minio.response.multipart.MultipartCompleteResponse;
 import com.example.minio.response.multipart.MultipartInitResponse;
 import com.example.minio.response.multipart.MultipartPartUrlResponse;
@@ -40,6 +42,16 @@ public class MultipartFileController {
     public Result<Void> completePart(@RequestBody MultipartPartCompleteRequest req) {
         multipartUploadService.completePart(req);
         return Result.ok();
+    }
+
+    @PostMapping("/pause")
+    public Result<MultipartStatusResponse> pause(@RequestBody MultipartPauseRequest req) {
+        return Result.ok(multipartUploadService.pause(req));
+    }
+
+    @PostMapping("/resume")
+    public Result<MultipartStatusResponse> resume(@RequestBody MultipartResumeRequest req) {
+        return Result.ok(multipartUploadService.resume(req));
     }
 
     @PostMapping("/complete")

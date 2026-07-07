@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: deploy-lab
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+deploy-lab:
+  app-version: ${APP_VERSION:1.0.0}
+  instance-id: ${APP_INSTANCE_ID:${HOSTNAME:local}}
+  diagnostics:
+    enabled: ${DIAGNOSTICS_ENABLED:true}
+  storage:
+    max-messages: ${MAX_MESSAGES:200}
+    max-request-records: ${MAX_REQUEST_RECORDS:100}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [traceId=%X{traceId:-}] [instanceId=%X{instanceId:-}] %logger{36} - %msg%n"

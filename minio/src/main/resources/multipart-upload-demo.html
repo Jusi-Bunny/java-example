@@ -1,99 +1,489 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>MinIO 分片上传 Demo</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #f7f8fa;
-            color: #1f2937;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
         }
 
-        main {
-            max-width: 860px;
-            margin: 40px auto;
-            padding: 24px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        label,
-        button,
-        input {
+        header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #1a202c;
+        }
+
+        .subtitle {
             font-size: 14px;
+            color: #64748b;
+            margin: 0;
         }
 
-        .row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin: 16px 0;
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        button {
-            border: 0;
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 6px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            padding: 8px 14px;
-            background: #2563eb;
-            color: white;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            font-family: "SF Mono", "Monaco", "Consolas", monospace;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .file-upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            background: #f8fafc;
+            transition: border-color 0.2s, background-color 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-upload-area:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .file-upload-area.has-file {
+            border-style: solid;
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        .file-upload-text {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .file-upload-text strong {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .file-info {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+
+        .file-info.visible {
+            display: flex;
+        }
+
+        .file-icon {
+            font-size: 24px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+            word-break: break-all;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        #fileInput {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
             cursor: pointer;
         }
 
-        button:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        progress {
-            width: 100%;
-            height: 18px;
-        }
-
-        pre {
-            min-height: 260px;
-            max-height: 420px;
-            overflow: auto;
-            padding: 12px;
-            background: #111827;
-            color: #d1d5db;
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
             border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
+            outline: none;
+        }
+
+        button:focus-visible {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button.primary {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        button.primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        button.secondary {
+            background: #64748b;
+            color: #ffffff;
+        }
+
+        button.secondary:hover:not(:disabled) {
+            background: #475569;
+        }
+
+        button.success {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        button.success:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        button.danger {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        button.danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        button:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            margin-top: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-label {
             font-size: 13px;
-            line-height: 1.5;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .progress-percentage {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 12px;
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        .status-badge.uploading {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-badge.paused {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .log-section {
+            margin-top: 24px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #1e293b;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #334155;
+            border-bottom: none;
+        }
+
+        .log-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .log-indicator {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        }
+
+        .log-content {
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 16px;
+            background: #0f172a;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            border-radius: 0 0 8px 8px;
+            font-family: "SF Mono", "Monaco", "Consolas", monospace;
+            font-size: 13px;
+            line-height: 1.6;
             white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .log-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-content::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        .log-content::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        .log-content::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .log-empty {
+            color: #64748b;
+            font-style: italic;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .file-upload-area {
+                padding: 24px 16px;
+            }
         }
     </style>
 </head>
 <body>
-<main>
-    <h1>MinIO 分片上传 Demo</h1>
+<div class="container">
+    <header>
+        <h1>MinIO 分片上传 Demo</h1>
+        <p class="subtitle">一个演示 MinIO 多部分上传功能的开发者工具，支持大文件分片、断点续传和并发上传</p>
+    </header>
 
-    <div class="row">
-        <label>
-            后端地址：
-            <input id="apiBase" value="http://127.0.0.1:9095/api" size="32" />
-        </label>
+    <div class="card">
+        <div class="form-group">
+            <label for="apiBase">后端 API 地址</label>
+            <input type="text" id="apiBase" value="http://127.0.0.1:9095/api"/>
+            <div class="help-text">MinIO 上传服务的后端接口地址</div>
+        </div>
+
+        <div class="form-group">
+            <label for="fileInput">选择文件</label>
+            <div class="file-upload-area" id="fileUploadArea">
+                <input type="file" id="fileInput" aria-label="选择文件"/>
+                <div class="file-upload-icon">📁</div>
+                <p class="file-upload-text">
+                    <strong>点击选择文件</strong> 或拖放文件到此处
+                </p>
+            </div>
+            <div class="file-info" id="fileInfo">
+                <div class="file-icon">📄</div>
+                <div class="file-details">
+                    <p class="file-name" id="fileName">—</p>
+                    <p class="file-size" id="fileSize">—</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="uploadBtn" class="primary">开始上传</button>
+            <button id="pauseBtn" class="secondary" disabled>暂停上传</button>
+            <button id="resumeBtn" class="success" disabled>继续上传</button>
+            <button id="abortBtn" class="danger" disabled>取消上传</button>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-header">
+                <span class="progress-label">上传进度</span>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="status-badge" id="statusBadge">就绪</span>
+                    <span class="progress-percentage" id="progressText">0%</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="row">
-        <input id="fileInput" type="file" />
-        <button id="uploadBtn">开始上传</button>
-        <button id="abortBtn" disabled>取消上传</button>
+    <div class="log-section">
+        <div class="log-header">
+            <h3 class="log-title">上传日志</h3>
+            <div class="log-indicator" id="logIndicator"></div>
+        </div>
+        <div class="log-content" id="log">
+            <div class="log-empty">暂无日志</div>
+        </div>
     </div>
-
-    <progress id="progress" value="0" max="100"></progress>
-    <pre id="log"></pre>
-</main>
+</div>
 
 <script>
     const fileInput = document.querySelector('#fileInput');
+    const fileUploadArea = document.querySelector('#fileUploadArea');
+    const fileInfo = document.querySelector('#fileInfo');
+    const fileName = document.querySelector('#fileName');
+    const fileSize = document.querySelector('#fileSize');
     const uploadBtn = document.querySelector('#uploadBtn');
+    const pauseBtn = document.querySelector('#pauseBtn');
+    const resumeBtn = document.querySelector('#resumeBtn');
     const abortBtn = document.querySelector('#abortBtn');
-    const progressEl = document.querySelector('#progress');
+    const progressFill = document.querySelector('#progressFill');
+    const progressText = document.querySelector('#progressText');
+    const statusBadge = document.querySelector('#statusBadge');
     const logEl = document.querySelector('#log');
     const apiBaseInput = document.querySelector('#apiBase');
 
@@ -102,10 +492,37 @@
     const MAX_RETRY = 3;
 
     let currentUpload = null;
+    let currentFile = null;
+    let uploadedPartNumbers = new Set();
+    let ongoingUploadPromise = null;
     let aborted = false;
+    let paused = false;
 
+    fileInput.addEventListener('change', handleFileSelect);
     uploadBtn.addEventListener('click', uploadSelectedFile);
+    pauseBtn.addEventListener('click', pauseCurrentUpload);
+    resumeBtn.addEventListener('click', resumeCurrentUpload);
     abortBtn.addEventListener('click', abortCurrentUpload);
+
+    function handleFileSelect() {
+        const file = fileInput.files[0];
+        if (file) {
+            currentFile = file;
+            fileUploadArea.classList.add('has-file');
+            fileInfo.classList.add('visible');
+            fileName.textContent = file.name;
+            fileSize.textContent = formatBytes(file.size);
+            uploadBtn.disabled = false;
+        } else {
+            fileUploadArea.classList.remove('has-file');
+            fileInfo.classList.remove('visible');
+            fileName.textContent = '—';
+            fileSize.textContent = '—';
+            if (!currentUpload) {
+                uploadBtn.disabled = false;
+            }
+        }
+    }
 
     async function uploadSelectedFile() {
         const file = fileInput.files[0];
@@ -114,11 +531,23 @@
             return;
         }
 
+        if (paused && currentUpload) {
+            if (!isSameFile(file, currentFile)) {
+                appendLog('当前存在已暂停上传，请先继续或取消当前任务');
+                return;
+            }
+            await resumeCurrentUpload();
+            return;
+        }
+
         aborted = false;
-        uploadBtn.disabled = true;
-        abortBtn.disabled = false;
-        progressEl.value = 0;
-        logEl.textContent = '';
+        paused = false;
+        currentFile = file;
+        currentUpload = null;
+        uploadedPartNumbers = new Set();
+        updateProgress(0);
+        clearLog();
+        setUiState('uploading');
 
         try {
             appendLog(`文件：${file.name}`);
@@ -139,8 +568,11 @@
             const init = unwrap(initResp);
 
             if (init.instant) {
-                progressEl.value = 100;
+                updateProgress(100);
                 appendLog(`秒传成功：${init.objectName}`);
+                clearCurrentUpload();
+                setUiState('completed');
+                setTimeout(() => setUiState('idle'), 2000);
                 return;
             }
 
@@ -148,7 +580,9 @@
                 uploadId: init.uploadId,
                 objectName: init.objectName,
                 partSize: init.partSize,
-                partCount: init.partCount
+                partCount: init.partCount,
+                fileName: file.name,
+                fileSize: file.size
             };
 
             appendLog(`uploadId：${init.uploadId}`);
@@ -156,48 +590,74 @@
             appendLog(`partSize：${formatBytes(init.partSize)}`);
             appendLog(`partCount：${init.partCount}`);
 
-            const uploadedPartNumbers = new Set((init.uploadedParts || []).map(part => part.partNumber));
+            uploadedPartNumbers = new Set((init.uploadedParts || []).map(part => part.partNumber));
             appendLog(`已上传分片：${uploadedPartNumbers.size}`);
 
-            const tasks = [];
-            for (let partNumber = 1; partNumber <= init.partCount; partNumber++) {
-                if (!uploadedPartNumbers.has(partNumber)) {
-                    tasks.push(() => uploadOnePart(file, currentUpload, partNumber));
-                }
+            await ensureUploadSessionReady(currentUpload);
+            const outcome = await uploadRemainingParts(file, currentUpload);
+            if (outcome === 'completed') {
+                clearCurrentUpload();
+                setUiState('completed');
+                setTimeout(() => setUiState('idle'), 2000);
             }
-
-            let completed = uploadedPartNumbers.size;
-            updateProgress(completed, init.partCount);
-
-            await runWithConcurrency(tasks, CONCURRENCY, () => {
-                completed++;
-                updateProgress(completed, init.partCount);
-            });
-
-            if (aborted) {
-                appendLog('上传已取消');
-                return;
-            }
-
-            appendLog('所有分片上传完成，开始合并...');
-            const completeResp = await postJson('/files/multipart/complete', {
-                uploadId: currentUpload.uploadId,
-                objectName: currentUpload.objectName
-            });
-
-            const completedFile = unwrap(completeResp);
-            progressEl.value = 100;
-            appendLog(`合并完成：${completedFile.objectName}`);
         } catch (error) {
             appendLog(`失败：${error.message || error}`);
-        } finally {
-            uploadBtn.disabled = false;
-            abortBtn.disabled = true;
+            clearCurrentUpload();
+            setUiState('error');
+            setTimeout(() => setUiState('idle'), 3000);
         }
     }
 
-    async function uploadOnePart(file, upload, partNumber) {
+    async function uploadRemainingParts(file, upload) {
+        updateProgress(Math.round((uploadedPartNumbers.size / upload.partCount) * 100));
+        ongoingUploadPromise = runWithConcurrency(
+            buildRemainingTasks(file, upload),
+            CONCURRENCY
+        );
+
+        try {
+            await ongoingUploadPromise;
+        } finally {
+            ongoingUploadPromise = null;
+        }
+
         if (aborted) {
+            appendLog('上传已取消');
+            clearCurrentUpload();
+            setUiState('idle');
+            return 'aborted';
+        }
+
+        if (paused) {
+            appendLog(`已暂停，当前已完成分片：${uploadedPartNumbers.size}/${upload.partCount}`);
+            setUiState('paused');
+            return 'paused';
+        }
+
+        appendLog('所有分片上传完成，开始合并...');
+        const completeResp = await postJson('/files/multipart/complete', {
+            uploadId: upload.uploadId,
+            objectName: upload.objectName
+        });
+
+        const completedFile = unwrap(completeResp);
+        updateProgress(100);
+        appendLog(`合并完成：${completedFile.objectName}`);
+        return 'completed';
+    }
+
+    function buildRemainingTasks(file, upload) {
+        const tasks = [];
+        for (let partNumber = 1; partNumber <= upload.partCount; partNumber++) {
+            if (!uploadedPartNumbers.has(partNumber)) {
+                tasks.push(() => uploadOnePart(file, upload, partNumber));
+            }
+        }
+        return tasks;
+    }
+
+    async function uploadOnePart(file, upload, partNumber) {
+        if (aborted || paused || uploadedPartNumbers.has(partNumber)) {
             return;
         }
 
@@ -234,9 +694,18 @@
                     etag: rawEtag.replaceAll('"', '')
                 });
 
+                uploadedPartNumbers.add(partNumber);
+                updateProgress(Math.round((uploadedPartNumbers.size / upload.partCount) * 100));
                 appendLog(`Part ${partNumber} 上传完成`);
                 return;
             } catch (error) {
+                if (aborted) {
+                    return;
+                }
+                if (paused) {
+                    appendLog(`Part ${partNumber} 已暂停，等待继续上传`);
+                    return;
+                }
                 appendLog(`Part ${partNumber} 第 ${attempt} 次失败：${error.message || error}`);
                 if (attempt === MAX_RETRY) {
                     throw error;
@@ -246,8 +715,71 @@
         }
     }
 
+    async function pauseCurrentUpload() {
+        if (!currentUpload || paused || aborted) {
+            return;
+        }
+
+        paused = true;
+        setUiState('pausing');
+
+        try {
+            const pauseResp = await postJson('/files/multipart/pause', {
+                uploadId: currentUpload.uploadId,
+                objectName: currentUpload.objectName
+            });
+            syncUploadState(unwrap(pauseResp));
+            appendLog('已请求暂停，等待进行中的分片完成...');
+
+            if (ongoingUploadPromise) {
+                await ongoingUploadPromise.catch(() => {
+                });
+            }
+
+            if (!aborted) {
+                appendLog('暂停完成');
+                setUiState('paused');
+            }
+        } catch (error) {
+            paused = false;
+            appendLog(`暂停上传失败：${error.message || error}`);
+            setUiState('uploading');
+        }
+    }
+
+    async function resumeCurrentUpload() {
+        if (!currentUpload || !currentFile || aborted) {
+            appendLog('当前没有可继续的上传任务');
+            return;
+        }
+
+        paused = false;
+        setUiState('uploading');
+
+        try {
+            const resumeResp = await postJson('/files/multipart/resume', {
+                uploadId: currentUpload.uploadId,
+                objectName: currentUpload.objectName
+            });
+            syncUploadState(unwrap(resumeResp));
+            appendLog(`继续上传，当前已完成分片：${uploadedPartNumbers.size}/${currentUpload.partCount}`);
+
+            const outcome = await uploadRemainingParts(currentFile, currentUpload);
+            if (outcome === 'completed') {
+                clearCurrentUpload();
+                setUiState('completed');
+                setTimeout(() => setUiState('idle'), 2000);
+            }
+        } catch (error) {
+            paused = true;
+            appendLog(`继续上传失败：${error.message || error}`);
+            setUiState('paused');
+        }
+    }
+
     async function abortCurrentUpload() {
         aborted = true;
+        paused = false;
 
         if (!currentUpload) {
             return;
@@ -259,32 +791,50 @@
                 objectName: currentUpload.objectName
             });
             appendLog('已请求后端取消上传');
+            clearCurrentUpload();
+            setUiState('idle');
         } catch (error) {
             appendLog(`取消上传失败：${error.message || error}`);
         }
     }
 
-    async function runWithConcurrency(tasks, concurrency, onTaskDone) {
+    async function runWithConcurrency(tasks, concurrency) {
         let nextIndex = 0;
 
         async function worker() {
             while (nextIndex < tasks.length) {
-                if (aborted) {
+                if (aborted || paused) {
                     return;
                 }
 
                 const task = tasks[nextIndex++];
                 await task();
-                onTaskDone();
             }
         }
 
         const workers = Array.from(
-            { length: Math.min(concurrency, tasks.length) },
+            {length: Math.min(concurrency, tasks.length)},
             () => worker()
         );
 
         await Promise.all(workers);
+    }
+
+    async function ensureUploadSessionReady(upload) {
+        const statusResp = await getJson(`/files/multipart/status?uploadId=${encodeURIComponent(upload.uploadId)}`);
+        const status = unwrap(statusResp);
+        syncUploadState(status);
+
+        if (status.status === 'PAUSED') {
+            appendLog('检测到会话处于暂停状态，自动恢复上传');
+            const resumeResp = await postJson('/files/multipart/resume', {
+                uploadId: status.uploadId,
+                objectName: status.objectName
+            });
+            syncUploadState(unwrap(resumeResp));
+        } else if (status.status !== 'UPLOADING') {
+            throw new Error(`上传会话状态异常：${status.status}`);
+        }
     }
 
     async function sha256(file) {
@@ -305,7 +855,17 @@
         });
 
         if (!response.ok) {
-            throw new Error(`后端请求失败：${response.status}`);
+            throw new Error(await readErrorMessage(response));
+        }
+
+        return response.json();
+    }
+
+    async function getJson(path) {
+        const response = await fetch(`${apiBaseInput.value}${path}`);
+
+        if (!response.ok) {
+            throw new Error(await readErrorMessage(response));
         }
 
         return response.json();
@@ -318,13 +878,36 @@
         return result.data;
     }
 
-    function updateProgress(completed, total) {
-        progressEl.value = total === 0 ? 0 : Math.round((completed / total) * 100);
+    function syncUploadState(status) {
+        currentUpload = {
+            uploadId: status.uploadId,
+            objectName: status.objectName,
+            partSize: status.partSize,
+            partCount: status.partCount,
+            fileName: status.fileName,
+            fileSize: status.fileSize
+        };
+        uploadedPartNumbers = new Set((status.uploadedParts || []).map(part => part.partNumber));
+        updateProgress(Math.round((uploadedPartNumbers.size / status.partCount) * 100));
+    }
+
+    function updateProgress(percentage) {
+        progressFill.style.width = `${percentage}%`;
+        progressText.textContent = `${percentage}%`;
     }
 
     function appendLog(message) {
+        const logEmpty = logEl.querySelector('.log-empty');
+        if (logEmpty) {
+            logEl.removeChild(logEmpty);
+            logEl.textContent = '';
+        }
         logEl.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
         logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLog() {
+        logEl.innerHTML = '<div class="log-empty">暂无日志</div>';
     }
 
     function formatBytes(bytes) {
@@ -343,6 +926,109 @@
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+
+    function setUiState(state) {
+        statusBadge.className = 'status-badge';
+
+        if (state === 'uploading') {
+            uploadBtn.disabled = true;
+            pauseBtn.disabled = false;
+            resumeBtn.disabled = true;
+            abortBtn.disabled = false;
+            statusBadge.classList.add('uploading');
+            statusBadge.textContent = '上传中';
+            return;
+        }
+
+        if (state === 'pausing') {
+            uploadBtn.disabled = true;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = true;
+            abortBtn.disabled = false;
+            statusBadge.classList.add('paused');
+            statusBadge.textContent = '暂停中';
+            return;
+        }
+
+        if (state === 'paused') {
+            uploadBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = false;
+            abortBtn.disabled = false;
+            statusBadge.classList.add('paused');
+            statusBadge.textContent = '已暂停';
+            return;
+        }
+
+        if (state === 'completed') {
+            uploadBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = true;
+            abortBtn.disabled = true;
+            statusBadge.classList.add('completed');
+            statusBadge.textContent = '已完成';
+            return;
+        }
+
+        if (state === 'error') {
+            uploadBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = true;
+            abortBtn.disabled = true;
+            statusBadge.classList.add('error');
+            statusBadge.textContent = '失败';
+            return;
+        }
+
+        uploadBtn.disabled = !fileInput.files[0];
+        pauseBtn.disabled = true;
+        resumeBtn.disabled = true;
+        abortBtn.disabled = true;
+        statusBadge.textContent = '就绪';
+    }
+
+    function clearCurrentUpload() {
+        currentUpload = null;
+        currentFile = null;
+        uploadedPartNumbers = new Set();
+        ongoingUploadPromise = null;
+        aborted = false;
+        paused = false;
+    }
+
+    function isSameFile(left, right) {
+        return !!left
+            && !!right
+            && left.name === right.name
+            && left.size === right.size
+            && left.type === right.type;
+    }
+
+    async function readErrorMessage(response) {
+        const text = await response.text();
+        if (!text) {
+            return `后端请求失败：${response.status}`;
+        }
+
+        try {
+            const parsed = JSON.parse(text);
+            const message = parsed.message || parsed.detail || parsed.error;
+            if (message) {
+                if (message.includes('PAUSED')) {
+                    return '上传会话已暂停，请先继续上传';
+                }
+                return message;
+            }
+        } catch (e) {
+            if (text.includes('PAUSED')) {
+                return '上传会话已暂停，请先继续上传';
+            }
+        }
+
+        return `后端请求失败：${response.status}，${text}`;
+    }
+
+    setUiState('idle');
 </script>
 </body>
 </html>

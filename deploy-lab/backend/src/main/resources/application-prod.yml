@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  file:
+    name: ${LOG_FILE:/var/log/deploy-lab/application.log}
+  logback:
+    rollingpolicy:
+      max-history: 14
+      max-file-size: 20MB

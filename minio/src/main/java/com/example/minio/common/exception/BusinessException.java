@@ -1,6 +1,7 @@
 package com.example.minio.common.exception;
 
-import com.jusi.common.error.ErrorCode;
+
+import com.example.minio.common.error.ErrorCode;
 import lombok.Getter;
 
 @Getter

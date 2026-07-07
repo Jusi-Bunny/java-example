@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE_URL="${1:-http://127.0.0.1}"
+
+curl -fsS "$BASE_URL/actuator/health" >/dev/null
+curl -fsS "$BASE_URL/api/system/info" >/dev/null
+curl -fsS "$BASE_URL/api/messages" >/dev/null
+curl -fsS "$BASE_URL/" >/dev/null
+
+echo "Smoke test passed: $BASE_URL"

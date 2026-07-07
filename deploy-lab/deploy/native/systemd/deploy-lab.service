@@ -1,0 +1,20 @@
+[Unit]
+Description=Deploy Lab Backend
+After=network.target
+
+[Service]
+User=deploylab
+Group=deploylab
+WorkingDirectory=/opt/deploy-lab/backend
+ExecStart=/usr/bin/java -jar /opt/deploy-lab/backend/deploy-lab.jar --spring.config.additional-location=/opt/deploy-lab/backend/config/
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+
+Environment=SPRING_PROFILES_ACTIVE=prod
+Environment=APP_INSTANCE_ID=backend-native-01
+Environment=SERVER_PORT=8080
+Environment=APP_VERSION=1.0.0
+
+[Install]
+WantedBy=multi-user.target

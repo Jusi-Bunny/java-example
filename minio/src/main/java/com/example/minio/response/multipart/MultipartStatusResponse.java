@@ -13,6 +13,10 @@ public class MultipartStatusResponse {
 
     private String objectName;
 
+    private String fileName;
+
+    private Long fileSize;
+
     private String status;
 
     private Long partSize;

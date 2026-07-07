@@ -1,0 +1,47 @@
+### health
+GET http://localhost:8080/actuator/health
+
+### system info
+GET http://localhost:8080/api/system/info
+X-Request-Id: local-dev-request
+
+### inspect get
+GET http://localhost:8080/api/http/inspect?source=rest-client
+X-Demo-Header: deploy-lab
+Authorization: Bearer secret
+
+### inspect post
+POST http://localhost:8080/api/http/inspect
+Content-Type: application/json
+Cookie: token=secret
+
+{
+  "message": "hello deploy lab"
+}
+
+### create message
+POST http://localhost:8080/api/messages
+Content-Type: application/json
+
+{
+  "title": "部署记录",
+  "content": "第一次原生部署成功"
+}
+
+### list messages
+GET http://localhost:8080/api/messages?limit=50
+
+### delete message
+DELETE http://localhost:8080/api/messages/1
+
+### request records
+GET http://localhost:8080/api/request-records
+
+### delay
+GET http://localhost:8080/api/diagnostics/delay?milliseconds=1000
+
+### status
+GET http://localhost:8080/api/diagnostics/status?code=503
+
+### error
+GET http://localhost:8080/api/diagnostics/error
