@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/acc")
-public class LoginController {
+public class LoginDemoController {
 
     // 测试登录 ---- http://localhost:9094/api/acc/doLogin?username=admin&password=123456
     @RequestMapping("/doLogin")

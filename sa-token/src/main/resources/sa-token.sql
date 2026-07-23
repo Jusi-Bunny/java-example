@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS sa_token DEFAULT CHARACTER SET utf8mb4;
+CREATE DATABASE IF NOT EXISTS sa_token DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 
 USE sa_token;
 
@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS sys_user
     updated_at DATETIME              DEFAULT NULL COMMENT '修改时间',
     is_deleted TINYINT      NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '用户表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT '用户表';
 
 -- 角色表
 CREATE TABLE IF NOT EXISTS sys_role
@@ -36,7 +38,9 @@ CREATE TABLE IF NOT EXISTS sys_role
     updated_at  DATETIME              DEFAULT NULL COMMENT '修改时间',
     is_deleted  TINYINT      NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '角色表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT '角色表';
 
 -- 权限表
 CREATE TABLE IF NOT EXISTS sys_permission
@@ -58,7 +62,9 @@ CREATE TABLE IF NOT EXISTS sys_permission
     is_deleted      TINYINT      NOT NULL DEFAULT 0 COMMENT '是否删除：0-未删除，1-已删除',
     PRIMARY KEY (id),
     KEY idx_permission_parent_id (parent_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '权限表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT '权限表';
 
 -- ============================================
 -- 2. 关系映射表
@@ -78,7 +84,9 @@ CREATE TABLE IF NOT EXISTS sys_user_role
     PRIMARY KEY (id),
     KEY idx_user_role_user_id (user_id),
     KEY idx_user_role_role_id (role_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '用户角色关联表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT '用户角色关联表';
 
 -- 角色权限关联表
 CREATE TABLE IF NOT EXISTS sys_role_permission
@@ -94,7 +102,9 @@ CREATE TABLE IF NOT EXISTS sys_role_permission
     PRIMARY KEY (id),
     KEY idx_role_permission_role_id (role_id),
     KEY idx_role_permission_permission_id (permission_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '角色权限关联表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT '角色权限关联表';
 
 -- ============================================
 -- 3. 初始化数据
@@ -102,47 +112,43 @@ CREATE TABLE IF NOT EXISTS sys_role_permission
 
 -- 初始化管理员用户（登录密码：123456）
 INSERT IGNORE INTO sys_user
-    (id, username, password, nickname, status, created_by, created_at, updated_by, updated_at, is_deleted)
-VALUES
-    (10001, 'admin', '$2a$10$2unzADv2gelCwKWCiF5b3evYsQTMObWpGIfQTNjPVsZr1cdeAB9ou', '管理员', 1,
-     10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
+(id, username, password, nickname, status, created_by, created_at, updated_by, updated_at, is_deleted)
+VALUES (10001, 'admin', '$2a$10$2unzADv2gelCwKWCiF5b3evYsQTMObWpGIfQTNjPVsZr1cdeAB9ou', '管理员', 1,
+        10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
 
 -- 初始化角色
 INSERT IGNORE INTO sys_role
-    (id, role_code, role_name, description, status, created_by, created_at, updated_by, updated_at, is_deleted)
-VALUES
-    (1001, 'admin', '管理员', '系统管理员角色', 1, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (1002, 'super-admin', '超级管理员', '系统超级管理员角色', 1, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
+(id, role_code, role_name, description, status, created_by, created_at, updated_by, updated_at, is_deleted)
+VALUES (1001, 'admin', '管理员', '系统管理员角色', 1, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (1002, 'super-admin', '超级管理员', '系统超级管理员角色', 1, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP,
+        0);
 
 -- 初始化权限，不初始化 user.delete，用于演示无权限场景
 INSERT IGNORE INTO sys_permission
-    (id, permission_code, permission_name, permission_type, parent_id, path, component, icon, sort, status,
-     created_by, created_at, updated_by, updated_at, is_deleted)
-VALUES
-    (101, '101', '示例权限', 3, 0, NULL, NULL, NULL, 1, 1,
-     10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (102, 'user.add', '新增用户', 3, 0, NULL, NULL, NULL, 2, 1,
-     10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (103, 'user.update', '修改用户', 3, 0, NULL, NULL, NULL, 3, 1,
-     10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (104, 'user.get', '查看用户', 3, 0, NULL, NULL, NULL, 4, 1,
-     10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (105, 'art.*', '文章全部权限', 3, 0, NULL, NULL, NULL, 5, 1,
-     10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
+(id, permission_code, permission_name, permission_type, parent_id, path, component, icon, sort, status,
+ created_by, created_at, updated_by, updated_at, is_deleted)
+VALUES (101, '101', '示例权限', 3, 0, NULL, NULL, NULL, 1, 1,
+        10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (102, 'user.add', '新增用户', 3, 0, NULL, NULL, NULL, 2, 1,
+        10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (103, 'user.update', '修改用户', 3, 0, NULL, NULL, NULL, 3, 1,
+        10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (104, 'user.get', '查看用户', 3, 0, NULL, NULL, NULL, 4, 1,
+        10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (105, 'art.*', '文章全部权限', 3, 0, NULL, NULL, NULL, 5, 1,
+        10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
 
 -- 为管理员用户分配角色
 INSERT IGNORE INTO sys_user_role
-    (id, user_id, role_id, created_by, created_at, updated_by, updated_at, is_deleted)
-VALUES
-    (10001, 10001, 1001, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (10002, 10001, 1002, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
+(id, user_id, role_id, created_by, created_at, updated_by, updated_at, is_deleted)
+VALUES (10001, 10001, 1001, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (10002, 10001, 1002, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
 
 -- 为管理员角色分配权限
 INSERT IGNORE INTO sys_role_permission
-    (id, role_id, permission_id, created_by, created_at, updated_by, updated_at, is_deleted)
-VALUES
-    (10001, 1001, 101, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (10002, 1001, 102, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (10003, 1001, 103, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (10004, 1001, 104, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
-    (10005, 1001, 105, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
+(id, role_id, permission_id, created_by, created_at, updated_by, updated_at, is_deleted)
+VALUES (10001, 1001, 101, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (10002, 1001, 102, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (10003, 1001, 103, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (10004, 1001, 104, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0),
+       (10005, 1001, 105, 10001, CURRENT_TIMESTAMP, 10001, CURRENT_TIMESTAMP, 0);
