@@ -1,0 +1,13 @@
+server:
+  port: 9096
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: i18n
+
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false

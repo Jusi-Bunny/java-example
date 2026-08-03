@@ -48,7 +48,7 @@ deploy/native/scripts/deploy.sh 1.0.0
 ## 验收
 
 ```bash
-systemctl status deploy-lab
+systemctl getStatus deploy-lab
 journalctl -u deploy-lab -f
 curl http://127.0.0.1:8080/actuator/health
 curl http://127.0.0.1/api/system/info
