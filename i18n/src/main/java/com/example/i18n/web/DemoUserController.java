@@ -19,12 +19,9 @@ public class DemoUserController {
     private final I18nMessageService i18n;
 
     @GetMapping("/greeting")
-    public Map<String, String> greeting(
-            @RequestParam(defaultValue = "Jusi") String name) {
+    public Map<String, String> greeting(@RequestParam(defaultValue = "Jusi") String name) {
 
-        return Map.of(
-                "message", i18n.get("greeting", name)
-        );
+        return Map.of("message", i18n.get("greeting", name));
     }
 
     @GetMapping("/{id}")
