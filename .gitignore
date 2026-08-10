@@ -36,4 +36,5 @@ build/
 
 ### CUSTOM ###
 application-local.yml
+application-local.yaml
 tmp
