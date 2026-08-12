@@ -41,15 +41,15 @@ public class LoginController {
         return SaResult.ok("退出成功");
     }
 
-    @PostMapping("/roles")
+    @GetMapping("/roles")
     public SaResult getRoles() {
         StpUtil.checkLogin();
-        return SaResult.data(StpUtil.getRoles());
+        return SaResult.data(StpUtil.getRoleList());
     }
 
-    @PostMapping("/permissions")
+    @GetMapping("/permissions")
     public SaResult getPermissions() {
         StpUtil.checkLogin();
-        return SaResult.data(StpUtil.getPermissions());
+        return SaResult.data(StpUtil.getPermissionList());
     }
 }

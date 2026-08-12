@@ -1,6 +1,8 @@
 package com.example.satoken.common.exception;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.util.SaResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +51,20 @@ public class GlobalExceptionHandler {
         // 返回 HTTP 400
         return ResponseEntity.status(400)
                 .body(SaResult.code(400).setMsg("请求参数缺失或格式错误"));
+    }
+
+    @ExceptionHandler(NotRoleException.class)
+    public ResponseEntity<SaResult> handleNotRoleException(NotRoleException e) {
+        // 返回 HTTP 403
+        return ResponseEntity.status(403)
+                .body(SaResult.code(403).setMsg("无权访问"));
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    public ResponseEntity<SaResult> handleNotPermissionException(NotPermissionException e) {
+        // 返回 HTTP 403
+        return ResponseEntity.status(403)
+                .body(SaResult.code(403).setMsg("无权访问"));
     }
 
     @ExceptionHandler(Exception.class)

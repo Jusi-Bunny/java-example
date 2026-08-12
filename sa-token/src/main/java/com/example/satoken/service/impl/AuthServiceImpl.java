@@ -1,6 +1,5 @@
 package com.example.satoken.service.impl;
 
-import cn.dev33.satoken.secure.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.satoken.common.exception.AccountDisabledException;
 import com.example.satoken.common.exception.LoginException;
@@ -8,6 +7,7 @@ import com.example.satoken.entity.SysUser;
 import com.example.satoken.mapper.SysUserMapper;
 import com.example.satoken.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,6 +20,8 @@ public class AuthServiceImpl implements AuthService {
 
     private final SysUserMapper sysUserMapper;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public Long authenticate(String username, String rawPassword) {
 
@@ -28,7 +30,11 @@ public class AuthServiceImpl implements AuthService {
 
         SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
 
-        if (sysUser == null || !BCrypt.checkpw(rawPassword, sysUser.getPassword())) {
+        // if (sysUser == null || !BCrypt.checkpw(rawPassword, sysUser.getPassword())) {
+        //     throw new LoginException("用户名或密码错误");
+        // }
+
+        if (sysUser == null || !passwordEncoder.matches(rawPassword, sysUser.getPassword())) {
             throw new LoginException("用户名或密码错误");
         }
 
