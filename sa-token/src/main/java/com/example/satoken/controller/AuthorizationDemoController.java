@@ -4,12 +4,14 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.util.SaResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Jusi
  * @date 2026/8/12
  */
+@Slf4j
 @RequestMapping("/authorization")
 @RestController
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class AuthorizationDemoController {
     @DeleteMapping("/users/{id}")
     @SaCheckPermission("user.delete")
     public SaResult deleteUsers(@PathVariable Long id) {
+        log.info("id = {}", id);
         return SaResult.ok("用户删除");
     }
 }

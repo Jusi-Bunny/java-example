@@ -28,7 +28,6 @@ public class LoginController {
 
     @GetMapping("/me")
     public SaResult currentUser() {
-        StpUtil.checkLogin();
         // 能执行到这里，表示当前请求存在有效登录态
         Object loginId = StpUtil.getLoginId();
         return SaResult.data(loginId);
@@ -36,20 +35,17 @@ public class LoginController {
 
     @PostMapping("/logout")
     public SaResult logout() {
-        StpUtil.checkLogin();
         StpUtil.logout();
         return SaResult.ok("退出成功");
     }
 
     @GetMapping("/roles")
     public SaResult getRoles() {
-        StpUtil.checkLogin();
         return SaResult.data(StpUtil.getRoleList());
     }
 
     @GetMapping("/permissions")
     public SaResult getPermissions() {
-        StpUtil.checkLogin();
         return SaResult.data(StpUtil.getPermissionList());
     }
 }
