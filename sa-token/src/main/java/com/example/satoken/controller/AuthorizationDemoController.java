@@ -2,6 +2,7 @@ package com.example.satoken.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 public class AuthorizationDemoController {
+
+    @GetMapping("/user/list")
+    public SaResult listUsers() {
+        StpUtil.checkPermission("user:list");
+        return SaResult.data("用户列表");
+    }
 
     // 角色校验：必须具有指定角色才能进入该方法
     @GetMapping("/admin")

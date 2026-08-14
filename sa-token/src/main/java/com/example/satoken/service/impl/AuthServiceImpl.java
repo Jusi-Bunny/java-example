@@ -30,10 +30,6 @@ public class AuthServiceImpl implements AuthService {
 
         SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
 
-        // if (sysUser == null || !BCrypt.checkpw(rawPassword, sysUser.getPassword())) {
-        //     throw new LoginException("用户名或密码错误");
-        // }
-
         if (sysUser == null || !passwordEncoder.matches(rawPassword, sysUser.getPassword())) {
             throw new LoginException("用户名或密码错误");
         }
