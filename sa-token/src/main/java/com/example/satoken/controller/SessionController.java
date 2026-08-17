@@ -30,4 +30,13 @@ public class SessionController {
         // 返回操作成功
         return SaResult.ok();
     }
+
+    @SaCheckRole("admin")
+    @PostMapping("/users/{userId}/devices/{deviceType}/kickout")
+    public SaResult kickout(@PathVariable Long userId, @PathVariable String deviceType) {
+        // 踢出该账号指定设备类型下的所有 Token
+        StpUtil.kickout(userId, deviceType);
+        // 返回操作成功
+        return SaResult.ok();
+    }
 }

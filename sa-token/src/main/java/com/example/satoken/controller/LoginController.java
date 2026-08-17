@@ -1,6 +1,7 @@
 package com.example.satoken.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.dev33.satoken.util.SaResult;
 import com.example.satoken.request.LoginRequest;
 import com.example.satoken.service.AuthService;
@@ -22,7 +23,7 @@ public class LoginController {
     @PostMapping("/login")
     public SaResult login(@Valid @RequestBody LoginRequest request) {
         Long userId = authService.authenticate(request.getUsername(), request.getPassword());
-        StpUtil.login(userId);
+        StpUtil.login(userId, SaLoginParameter.create().setDeviceType(request.getDeviceType()));
         return SaResult.data(StpUtil.getTokenInfo());
     }
 
