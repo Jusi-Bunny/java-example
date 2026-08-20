@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
             case NotLoginException.TOKEN_TIMEOUT -> "登录状态已过期，请重新登录";
             case NotLoginException.BE_REPLACED -> "账号已在其他设备登录";
             case NotLoginException.KICK_OUT -> "您已被管理员强制下线";
-            case NotLoginException.TOKEN_FREEZE -> "登录状态已冻结，请联系管理员";
+            case NotLoginException.TOKEN_FREEZE -> "登录状态因长时间未操作已失效，请重新登录";
             case NotLoginException.NO_PREFIX -> NotLoginException.NO_PREFIX_MESSAGE;
             case null, default -> "登录状态已失效，请重新登录";
         };
