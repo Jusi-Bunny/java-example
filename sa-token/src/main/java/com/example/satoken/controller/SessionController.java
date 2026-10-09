@@ -1,8 +1,12 @@
 package com.example.satoken.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.example.satoken.request.SessionRequest;
+import com.example.satoken.response.SessionResponse;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -38,5 +42,26 @@ public class SessionController {
         StpUtil.kickout(userId, deviceType);
         // 返回操作成功
         return SaResult.ok();
+    }
+
+    @PostMapping("/demo-state")
+    public SaResult setDemoState(@Valid @RequestBody SessionRequest request) {
+        SaSession accountSession = StpUtil.getSession();
+        SaSession tokenSession = StpUtil.getTokenSession();
+        accountSession.set("sharedLabel", request.getSharedLabel());
+        tokenSession.set("localStep", request.getLocalStep());
+        return SaResult.ok();
+    }
+
+    @GetMapping("/demo-state")
+    public SaResult getDemoState() {
+        SessionResponse sessionResponse = new SessionResponse();
+        SaSession accountSession = StpUtil.getSession();
+        SaSession tokenSession = StpUtil.getTokenSession();
+        String sharedLabel = accountSession.get("sharedLabel", "");
+        String localStep = tokenSession.get("localStep", "");
+        sessionResponse.setSharedLabel(sharedLabel);
+        sessionResponse.setLocalStep(localStep);
+        return SaResult.data(sessionResponse);
     }
 }

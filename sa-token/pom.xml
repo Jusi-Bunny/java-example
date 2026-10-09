@@ -84,6 +84,13 @@
             <version>${sa-token.version}</version>
         </dependency>
 
+        <!-- Sa-Token Redis Template -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-template</artifactId>
+            <version>${sa-token.version}</version>
+        </dependency>
+
         <!-- Spring Security Crypto -->
         <dependency>
             <groupId>org.springframework.security</groupId>

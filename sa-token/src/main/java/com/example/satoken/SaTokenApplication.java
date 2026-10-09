@@ -14,5 +14,6 @@ public class SaTokenApplication {
     public static void main(String[] args) {
         SpringApplication.run(SaTokenApplication.class, args);
         log.info("启动成功，Sa-Token 配置如下：{}", SaManager.getConfig());
+        log.info("Sa-Token DAO: {}", SaManager.getSaTokenDao().getClass().getName());
     }
 }
