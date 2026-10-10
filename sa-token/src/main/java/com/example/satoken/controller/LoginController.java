@@ -23,6 +23,7 @@ public class LoginController {
     @PostMapping("/login")
     public SaResult login(@Valid @RequestBody LoginRequest request) {
         Long userId = authService.authenticate(request.getUsername(), request.getPassword());
+        StpUtil.checkDisable(userId);
         StpUtil.login(userId, SaLoginParameter.create().setDeviceType(request.getDeviceType()));
         return SaResult.data(StpUtil.getTokenInfo());
     }

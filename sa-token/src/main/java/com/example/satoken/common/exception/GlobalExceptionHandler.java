@@ -1,8 +1,6 @@
 package com.example.satoken.common.exception;
 
-import cn.dev33.satoken.exception.NotLoginException;
-import cn.dev33.satoken.exception.NotPermissionException;
-import cn.dev33.satoken.exception.NotRoleException;
+import cn.dev33.satoken.exception.*;
 import cn.dev33.satoken.util.SaResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +15,19 @@ import java.util.Optional;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(DisableServiceException.class)
+    public ResponseEntity<SaResult> handleDisableServiceException(DisableServiceException e) {
+        return ResponseEntity.status(403)
+                .body(SaResult.code(403).setMsg("账号已被封禁"));
+    }
+
+    @ExceptionHandler(NotSafeException.class)
+    public ResponseEntity<SaResult> handleNotSafeException(NotSafeException e) {
+        // 返回 HTTP 403
+        return ResponseEntity.status(403)
+                .body(SaResult.code(403).setMsg("请先完成二级认证"));
+    }
 
     @ExceptionHandler(LoginException.class)
     public ResponseEntity<SaResult> handleLoginException(LoginException e) {

@@ -40,4 +40,12 @@ public class AuthServiceImpl implements AuthService {
 
         return sysUser.getId();
     }
+
+    @Override
+    public boolean verifyPassword(Long loginId, String rawPassword) {
+        SysUser sysUser = sysUserMapper.selectById(loginId);
+        return sysUser != null
+                && Integer.valueOf(1).equals(sysUser.getStatus())
+                && passwordEncoder.matches(rawPassword, sysUser.getPassword());
+    }
 }
