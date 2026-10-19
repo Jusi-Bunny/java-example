@@ -40,9 +40,12 @@ public class SafeController {
         return SaResult.data(response);
     }
 
-    // 模拟导出成功
+    // 模拟导出
     @PostMapping("/demo-export")
     public SaResult demoExport() {
+        StpUtil.checkDisable(StpUtil.getLoginId(), "demo-export");
+        // 导出入口：等级达到 1 就拒绝
+        StpUtil.checkDisableLevel(StpUtil.getLoginId(), "demo-risk", 1);
         StpUtil.checkSafe("demo-export");
         return SaResult.ok("模拟导出成功");
     }
@@ -71,8 +74,12 @@ public class SafeController {
         return SaResult.data(response);
     }
 
+    // 模拟删除
     @PostMapping("/demo-delete")
     public SaResult demoDelete() {
+        StpUtil.checkDisable(StpUtil.getLoginId(), "demo-delete");
+        // 删除入口：等级达到 2 才拒绝
+        StpUtil.checkDisableLevel(StpUtil.getLoginId(), "demo-risk", 2);
         StpUtil.checkSafe("demo-delete");
         return SaResult.ok("模拟删除成功");
     }

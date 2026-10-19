@@ -18,6 +18,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DisableServiceException.class)
     public ResponseEntity<SaResult> handleDisableServiceException(DisableServiceException e) {
+        if ("demo-export".equals(e.getService())) {
+            return ResponseEntity.status(403)
+                    .body(SaResult.code(403).setMsg("导出功能已被限制"));
+        } else if ("demo-delete".equals(e.getService())) {
+            return ResponseEntity.status(403)
+                    .body(SaResult.code(403).setMsg("删除功能已被限制"));
+        } else if ("demo-risk".equals(e.getService())) {
+            return ResponseEntity.status(403)
+                    .body(SaResult.code(403).setMsg("账号操作功能已被限制"));
+        }
         return ResponseEntity.status(403)
                 .body(SaResult.code(403).setMsg("账号已被封禁"));
     }
